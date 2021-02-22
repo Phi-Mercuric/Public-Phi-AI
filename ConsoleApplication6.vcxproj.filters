@@ -21,9 +21,15 @@
     <ClCompile Include="ConnectionNet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BellNet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConnectionNet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BellNet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
