@@ -1,4 +1,8 @@
 #pragma once
+#include <vector>
+
+using namespace std;
+
 class BellNet
 {
 	vector<vector<vector<vector<int>>>> cords; 
@@ -73,4 +77,3 @@ class BellNet
 		return cords[Layer][Node][0][5] * (input- k / 2 - (input- k) ^ 2 / (2 * (cords[Layer][Node][0][3] - k)));
 	}
 };
-
