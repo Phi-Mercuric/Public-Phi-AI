@@ -8,5 +8,7 @@ using namespace std;
 
 int main()
 {
-	ConnectionNet net();
+
+	ConnectionNet net;
+
 }

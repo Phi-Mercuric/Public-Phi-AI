@@ -1,5 +1,7 @@
 #pragma once
 #include <vector>
+#include "CalculationNet.h"
+#include "ConnectionNet.h"
 
 using namespace std;
 
