@@ -1,14 +1,12 @@
 #pragma once
 #include <vector>
-#include "CalculationNet.h"
-#include "ConnectionNet.h"
 
 using namespace std;
 
 class BellNet
 {
-	vector<vector<vector<vector<int>>>> cords; 
-	signed int CRS = 1; 
+	vector<vector<vector<vector<int>>>> cords;
+	signed int CRS = 1;
 	//cords[~][~][0][0] = DataPointAmt  | -[0][1,2] = x0, y0  | -[0][3,4] = xEnd, yEnd  | -[0][5+] odd = h  | -[0][5+] even = k
 
 	signed int iThreshold;
@@ -36,7 +34,7 @@ class BellNet
 			{
 				if (cords[Layer][Node][0][0] == 3)
 				{
-					updateBC_0(Layer,Node);
+					updateBC_0(Layer, Node);
 				}
 			}
 		}
@@ -51,7 +49,7 @@ class BellNet
 		int x2 = cords[Layer][Node][CRS + 2][0];
 		int y2 = cords[Layer][Node][CRS + 2][1];
 		int x3 = cords[Layer][Node][CRS + 3][0];
-		int y3 = cords[Layer][Node][CRS + 3][1]; 
+		int y3 = cords[Layer][Node][CRS + 3][1];
 
 		bool highLow = y1 > 2 * y2 * x1 / (2 * x2); // true = high
 
@@ -74,8 +72,8 @@ class BellNet
 	int eval(int input, signed int Layer, signed int Node)
 	{
 		int k = cords[Layer][Node][0][6];
-		if (input<= k) { return cords[Layer][Node][0][5] * input^ 2 / (2 * k) + cords[Layer][Node][0][3]; }
+		if (input <= k) { return cords[Layer][Node][0][5] * input ^ 2 / (2 * k) + cords[Layer][Node][0][3]; }
 		// else not needed
-		return cords[Layer][Node][0][5] * (input- k / 2 - (input- k) ^ 2 / (2 * (cords[Layer][Node][0][3] - k)));
+		return cords[Layer][Node][0][5] * (input - k / 2 - (input - k) ^ 2 / (2 * (cords[Layer][Node][0][3] - k)));
 	}
 };
