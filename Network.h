@@ -30,10 +30,12 @@ namespace phi
 					net[layer].push_back(stanNode);
 					for (int connNum = 0; connNum < nodes[layer - 1]; connNum++)
 					{
-						signed int temp1 = rand() % (2 * weightVariation) - weightVariation;
+						float temp1 = rand() % (2 * weightVariation) - weightVariation;
 						float temp2 = temp1 / weightVariation;
+						cout << temp2;
 						net[layer][node].connWeight.push_back(temp2); // allowing for variation in both pos and neg
-					}																									 // note mem inefficiency 
+						cout << net[layer][node].connWeight[connNum];
+					}											      // note mem inefficiency
 				}
 			}
 		}
@@ -62,21 +64,39 @@ namespace phi
 					float output = 0;
 					signed short int calcLength;
 
-					for (calcLength = 0; input > net[layer][node].khList[calcLength]; calcLength += 2) {  } // calcLength = the k after the input						// Bell curve
-					for (int i = 2; i < calcLength; i += 2) // calculating all parts of bell curve that are fully defined (aka areas of whole right triangle)			// calculator
-					{																																					// (This is
-						output += (net[layer][node].khList[i] - net[layer][node].khList[i - 2]) * ((net[layer][node].khList[i + 1] - net[layer][node].khList[i - 1])	//  somewhat
-							/ 2 + net[layer][node].khList[i - 1]);																										//  tested
-					}																																					//  could still
-					// (x-k0)( ((x-k0)*(h-h0))/(2(k-k0)) + h0 ) | Finding area of part of traingle																		//  have problems)
-					output += (input - net[layer][node].khList[calcLength - 2]) * (((input - net[layer][node].khList[calcLength - 2]) *									//
-						(net[layer][node].khList[calcLength + 1] - net[layer][node].khList[calcLength - 1])) / (2 * (net[layer][node].khList[calcLength]				//
-							- net[layer][node].khList[calcLength - 2])) + net[layer][node].khList[calcLength - 1]);														//
-					cout << output;
-					cout << "\n";
-					cout << "\n";
-					net[layer][node].value = output;
-
+					if (input > net[layer][node].khList[net[layer][node].khList.size() - 2])			// possible bug: if size is index, or if right side != last k in sequence for other reason
+					{																					// 
+						for (int i = 2; i < net[layer][node].khList.size() - 2; i += 2)					// this is Calc for right side beyond plotted curve
+						{
+							output += (net[layer][node].khList[i] - net[layer][node].khList[i - 2]) * ((net[layer][node].khList[i + 1] - net[layer][node].khList[i - 1])
+								/ 2 + net[layer][node].khList[i - 1]);
+						}
+						input - net[layer][node].khList[net[layer][node].khList.size() - 2];
+					}
+					else
+					{
+						for (calcLength = 0; input > net[layer][node].khList[calcLength]; calcLength += 2) {} // calcLength = the k after the input								// Bell curve
+						if (calcLength >= 2)																																	//
+						{																																						//
+							for (int i = 2; i < calcLength; i += 2) // calculating all parts of bell curve that are fully defined (aka areas of whole right triangle)			// calculator
+							{																																					// (This is
+								output += (net[layer][node].khList[i] - net[layer][node].khList[i - 2]) * ((net[layer][node].khList[i + 1] - net[layer][node].khList[i - 1])	//  somewhat
+									/ 2 + net[layer][node].khList[i - 1]);																										//  tested
+							}																																					//  could still
+							// (x-k0)( ((x-k0)*(h-h0))/(2(k-k0)) + h0 ) | Finding area of part of traingle																		//  have problems)
+							output += (input - net[layer][node].khList[calcLength - 2]) * (((input - net[layer][node].khList[calcLength - 2]) *									//
+								(net[layer][node].khList[calcLength + 1] - net[layer][node].khList[calcLength - 1])) / (2 * (net[layer][node].khList[calcLength]				//
+									- net[layer][node].khList[calcLength - 2])) + net[layer][node].khList[calcLength - 1]);														//
+							cout << "output " << output;
+							cout << "\n";
+							cout << "\n";
+						}
+						else
+						{
+							output += (net[layer][node].khList[1]) + (input / abs(input)) * sqrt(abs(input));	// bad lower end approx
+						}
+						net[layer][node].value = output;
+						}
 				}
 			}
 		}
