@@ -12,11 +12,11 @@ namespace phi
 	public:
 
 		float value;
-		vector<float> khList;				// lines between (k,h) is the derivative of bell curve
-		float sted[4] = { 0, 0, 0, 0 };		// start cords and end cords
-		vector<float> avDeviation;			// average deviation between last x and x (x, averageDeviation)
-		vector<float> cordList;				// derived from back propagation
-		vector<float> connWeight;			// weight of connection
+		vector<float> khList;						// lines between (k,h) is the derivative of bell curve
+		float sted[4] = { 0, 0, 0, 0 };				// start cords and end cords
+		vector<float> avDeviation;					// average deviation between last x and x (x, averageDeviation)
+		vector<float> cordList;						// derived from back propagation
+		vector<int> connWeight;						// weight of connection (uncompressed via /100000000)
 		float dimSmoothing;
 		float dimHeight;
 
