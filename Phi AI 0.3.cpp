@@ -3,9 +3,23 @@
 #include "Node.h"
 #include "Network.h"
 #include <ctime>
+#include <random>
 
-int main()
+int globalvaribale = 1000;
+
+std::default_random_engine generator;													// for random weights
+std::uniform_int_distribution<int> distribution(-globalvaribale, globalvaribale);	//
+float randomFloat()
 {
+	float something = distribution(generator);
+	return something;
+}
+
+void testerFunction()
+{
+	cout << randomFloat();
+	cout << randomFloat();
+
 	signed int input_Layers;
 	vector<signed int> input_Nodes;
 	cout << "How many layers do you wish to make? \n";
@@ -17,12 +31,15 @@ int main()
 		cin >> localInput;
 		input_Nodes.push_back(localInput);
 	}
-	double output = input_Nodes[0] / 2600 + 200;
-	for (int i = 1; i < input_Layers; i++)
+	double output = 500;
+	for (signed int i = 1; i < input_Layers; i++)
 	{
-		output += (input_Nodes[i] * 100  + input_Nodes[i] * input_Nodes[i - 1]) / 400000;
+		output += (input_Nodes[i] / 724 * input_Nodes[i - 1] / 724);
 	}
 	cout << "approx mem usage: " << output << "mb " << "(" << output / 1024 << "gb) \n";
+	cout << "how many iterations?";
+	signed int iterationAmt;
+	cin >> iterationAmt;
 	cout << "Initializing Net . . . \n";
 	int timeStart = time(nullptr);
 	//phi::Network somethingNetwork(input_Layers, input_Nodes);
@@ -31,41 +48,50 @@ int main()
 	{
 		for (signed int node = 0; node < newNetwork.nodes[layer]; ++node)
 		{
-			newNetwork.net[layer][node].addKHCords({ -9999, 9999, -1220, 10, 0, 5, 5, 10, 10, 20, 50, 100, 1220, 1, 99999, 99999 });
+			newNetwork.net[layer][node].addKHCords({ randomFloat(), randomFloat(), randomFloat(), randomFloat(), randomFloat(), randomFloat() });
 		}
 	}
 	vector<float> temp;
-	for (int i = 0; i < newNetwork.nodes[0]; ++i)
-	{
-		temp.push_back(rand() % 50);
-	}
-	cout << "Net finished in" << time(nullptr) - timeStart << " seconds. \n";
+
+	cout << "Net finished in " << time(nullptr) - timeStart << " seconds. \n";
 	timeStart = time(nullptr);
 	cout << "Calculating x10 . . . \n";
-	newNetwork.calculate(temp);
-	newNetwork.calculate(temp);
-	newNetwork.calculate(temp);
-	newNetwork.calculate(temp);
-	newNetwork.calculate(temp);
-	newNetwork.calculate(temp);
-	newNetwork.calculate(temp);
-	newNetwork.calculate(temp);
-	newNetwork.calculate(temp);
-	newNetwork.calculate(temp);
-	newNetwork.calculate(temp);
-	cout << "Finished in" << time(nullptr) - timeStart << " seconds. \n";
-	for (int layer = 1; layer < newNetwork.layers; ++layer)
+
+	for (int i = 0; i < iterationAmt; i++)
 	{
-		for (int node = 0; node < newNetwork.nodes[layer]; ++node)
+		temp = {  };
+		for (int i0 = 0; i0 < newNetwork.nodes[0]; ++i0)
 		{
-			for (int connection = 0; connection < newNetwork.nodes[layer - 1]; ++connection)
-			{
-				float output = newNetwork.net[layer][node].value;
-				//std::cout << output << "\n\n";
-			}
+			temp.push_back(randomFloat());
+			float temp0 = temp[i0];
+			cout << temp0 << ", ";
+		}
+		newNetwork.calculate(temp);
+		cout << "\n = ";
+		for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
+		{
+			float output = newNetwork.net[input_Layers - 1][node].value;
+			cout << output << ", ";
 		}
 	}
-	cout << "done";
-	int something;
-	cin >> something;
+
+	cout << "Finished in " << time(nullptr) - timeStart << " seconds. \n";
+	for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
+	{
+		float output = newNetwork.net[input_Layers - 1][node].value;
+		//std::cout << output << "\n";
+	}
+	cout << "done \n";
+}
+
+int main()
+{
+	for (bool thing = false; thing == false; thing = false)
+	{
+		testerFunction();
+		std::cout << "would you like to do another? (y/n) \n";
+		char input;
+		cin >> input;
+		thing = input == 'y';
+	}
 }

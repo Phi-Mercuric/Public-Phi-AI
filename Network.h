@@ -24,7 +24,6 @@ namespace phi
 
 			std::default_random_engine generator;													// for random weights
 			std::uniform_int_distribution<int> distribution(0-weightVariation, weightVariation);	//
-			int dice_roll = distribution(generator);												//
 
 			int maxConnections = 0;
 			int maxNodes = 0;
@@ -53,24 +52,40 @@ namespace phi
 			}
 		}
 
-		void backProp(vector<signed int> trueOutputNodes)
+		void backProp(vector<float> outputValues)
 		{
-			for (int layer = layers - 1; layer >= 0; layer--)
+			for (int layer = layers - 1; layer > 0; layer--)
 			{
 
-				if (layer == 0)
+				if (layer == layers-1)
 				{
 					for (int node = 0; node < nodes[layer]; node++)
 					{
-
+						net[layer][node].cordList.push_back( net[layer][node].movingInp );
+						net[layer][node].cordList.push_back( outputValues[node] );
+						net[layer][node].movingTV = outputValues[node];
+						for (int conn = 0; conn < nodes[layer-1]; conn++)
+						{
+							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][node].value) / net[layer][node].connWeightAmt[conn];
+						}
 					}
 				}
-				for (int node = 0; node < nodes[layer]; node++)
+				else
 				{
-					//net[layer][node].addKHCords({ net[layer][node].movingInp, net[layer][ });
-					for (int conn = 0; conn < nodes[layer - 1]; conn++)
+					for (int node = 0; node < nodes[layer]; node++)
 					{
+						float output = 0;
+						net[layer][node].cordList.push_back( net[layer][node].movingInp );
+						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)
+						{
+							output += net[layer][upNode].movingTV * net[layer][upNode].connWeight[node];
+						}
+						net[layer][node].cordList.push_back(output / nodes[layers]);
 
+						for (int conn = 0; conn < nodes[layer - 1]; conn++)
+						{
+							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][node].value) / net[layer][node].connWeightAmt[conn];
+						}
 					}
 				}
 			}

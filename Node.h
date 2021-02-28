@@ -18,8 +18,10 @@ namespace phi
 		vector<float> avDeviation;					// average deviation between last x and x (x, averageDeviation)
 		vector<float> cordList;						// derived from back propagation
 		vector<short int> connWeight;				// weight of connection (uncompressed via /10000)
+		vector<short int> connWeightAmt;			// amount of previous weight iterations
 		float dimSmoothing;
 		float dimHeight;
+		int movingTV;								// correct value that is used for back propogation
 
 		// Value Throughput Functions (like sigmoid)
 		void DirivMerge()
