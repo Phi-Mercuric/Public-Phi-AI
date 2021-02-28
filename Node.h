@@ -7,16 +7,17 @@ using namespace std;
 
 namespace phi
 {
-	class Node
+	class Node // ~ 900 nodes (with prev node at 900) = 1mb
 	{
 	public:
 
 		float value;
+		float movingInp;							// needed to make backprop more effiecent
 		vector<float> khList;						// lines between (k,h) is the derivative of bell curve
-		float sted[4] = { 0, 0, 0, 0 };				// start cords and end cords
+		float endCords[4] = { 0, 0 };				// start cords and end cords
 		vector<float> avDeviation;					// average deviation between last x and x (x, averageDeviation)
 		vector<float> cordList;						// derived from back propagation
-		vector<int> connWeight;						// weight of connection (uncompressed via /100000000)
+		vector<short int> connWeight;				// weight of connection (uncompressed via /10000)
 		float dimSmoothing;
 		float dimHeight;
 
@@ -44,11 +45,21 @@ namespace phi
 				if (khList.size() > 10)	//1a															// this is for potential optimization of process ( check efficiency of ++position to validate/invalidate )
 				{
 					//cout << "1a \n";
-					float guess = cords[i] / khList[khList.size() - 2];
-					for (int i = 0; i < round(guess * khList.size() / 2) * 2; ++i) { ++position; }		// division & multiplication of 2 is to make sure that it is even so that it corresponds to k
-					if (cords[i] > *position) { for (position; cords[i] > *position; ++position) {} }	// --position because insert pushes indexed value back ( so it is like putting value
-					else { for (position; cords[i] < *position; --position) {} ++position; }			// between position and position++) ( and thus position should be list k before input k )
-					--position;
+					if (cords[i] < khList[khList.size()-2])
+					{
+						float guess = cords[i] / khList[khList.size() - 2];
+						for (int i = 0; i < round(guess / 2) * 2; i++) { ++position; }						// division & multiplication of 2 is to make sure that it is even so that it corresponds to k
+						if (cords[i] > *position) { for (position; cords[i] > *position; ++position) {} }	// --position because insert pushes indexed value back ( so it is like putting value
+						else { for (position; cords[i] < *position; --position) {} ++position; }			// between position and position++) ( and thus position should be list k before input k )
+						--position;
+					}
+					else
+					{
+						for (int i = 0; i < khList.size() - 2; i++)
+						{
+							++position;
+						}
+					}
 				}
 				else //1b
 				{
