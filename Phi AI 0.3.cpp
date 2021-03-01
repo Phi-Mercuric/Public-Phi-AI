@@ -4,21 +4,12 @@
 #include "Network.h"
 #include <ctime>
 #include <random>
+#include "randomClass.h"
 
-int globalvaribale = 1000;
+using namespace std;
 
-std::default_random_engine generator;													// for random weights
-std::uniform_int_distribution<int> distribution(-globalvaribale, globalvaribale);	//
-float randomFloat()
+void calculateNetwork()
 {
-	float something = distribution(generator);
-	return something;
-}
-
-void testerFunction()
-{
-	cout << randomFloat();
-	cout << randomFloat();
 
 	signed int input_Layers;
 	vector<signed int> input_Nodes;
@@ -40,15 +31,23 @@ void testerFunction()
 	cout << "how many iterations?";
 	signed int iterationAmt;
 	cin >> iterationAmt;
+	cout << "what should the input variation?";
+	signed int inputVariation;
+	cin >> inputVariation;
+	cout << "would you like to see the inputs and outputs? (slows process) (y/n)";
+	char inputLetter;
+	cin >> inputLetter;
+	bool visualIO = inputLetter == 'y';
 	cout << "Initializing Net . . . \n";
 	int timeStart = time(nullptr);
 	//phi::Network somethingNetwork(input_Layers, input_Nodes);
+	randomClass rdmClass(inputVariation, input_Layers, input_Nodes, iterationAmt);
 	phi::Network newNetwork(input_Layers, input_Nodes);
 	for (signed short int layer = 0; layer < newNetwork.layers; ++layer)
 	{
 		for (signed int node = 0; node < newNetwork.nodes[layer]; ++node)
 		{
-			newNetwork.net[layer][node].addKHCords({ randomFloat(), randomFloat(), randomFloat(), randomFloat(), randomFloat(), randomFloat() });
+			newNetwork.net[layer][node].addKHCords({ rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator() });
 		}
 	}
 	vector<float> temp;
@@ -59,28 +58,40 @@ void testerFunction()
 
 	for (int i = 0; i < iterationAmt; i++)
 	{
-		temp = {  };
-		for (int i0 = 0; i0 < newNetwork.nodes[0]; ++i0)
+		if (visualIO)
 		{
-			temp.push_back(randomFloat());
-			float temp0 = temp[i0];
-			cout << temp0 << ", ";
+		cout << "\n \n \n ----------Next Iteration:---------- \n";
+		cout << "Inputs: \n";
+		}
+		temp.clear();
+		for (int i0 = 0; i0 < newNetwork.nodes[0]; i0++)
+		{
+			float temp0 = rdmClass.rdmGenerator();
+			temp.push_back(temp0);
+			if (visualIO)
+			{
+				cout << temp0 << ", ";
+			}
 		}
 		newNetwork.calculate(temp);
-		cout << "\n = ";
-		for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
+		if (visualIO)
 		{
-			float output = newNetwork.net[input_Layers - 1][node].value;
-			cout << output << ", ";
+			cout << "\n \n Outputs: \n";
+			for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
+			{
+				float output = newNetwork.net[input_Layers - 1][node].value;
+				cout << output << ", ";
+			}
 		}
 	}
 
 	cout << "Finished in " << time(nullptr) - timeStart << " seconds. \n";
+/*
 	for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
 	{
 		float output = newNetwork.net[input_Layers - 1][node].value;
-		//std::cout << output << "\n";
-	}
+		cout << output << "\n";
+	}*/
 	cout << "done \n";
 }
 
@@ -88,8 +99,8 @@ int main()
 {
 	for (bool thing = false; thing == false; thing = false)
 	{
-		testerFunction();
-		std::cout << "would you like to do another? (y/n) \n";
+		calculateNetwork();
+		cout << "would you like to do another? (y/n) \n";
 		char input;
 		cin >> input;
 		thing = input == 'y';
