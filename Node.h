@@ -7,18 +7,21 @@ using namespace std;
 
 namespace phi
 {
-	class Node
+	class Node // ~ 900 nodes (with prev node at 900) = 1mb
 	{
 	public:
 
 		float value;
-		vector<float> khList;				// lines between (k,h) is the derivative of bell curve
-		float sted[4] = { 0, 0, 0, 0 };		// start cords and end cords
-		vector<float> avDeviation;			// average deviation between last x and x (x, averageDeviation)
-		vector<float> cordList;				// derived from back propagation
-		vector<float> connWeight;			// weight of connection
+		float movingInp;							// needed to make backprop more effiecent
+		vector<float> khList;						// lines between (k,h) is the derivative of bell curve
+		float endCords[4] = { 0, 0 };				// start cords and end cords
+		vector<float> avDeviation;					// average deviation between last x and x (x, averageDeviation)
+		vector<float> cordList;						// derived from back propagation
+		vector<short int> connWeight;				// weight of connection (uncompressed via /10000)
+		vector<short int> connWeightAmt;			// amount of previous weight iterations
 		float dimSmoothing;
 		float dimHeight;
+		int movingTV;								// correct value that is used for back propogation
 
 		// Value Throughput Functions (like sigmoid)
 		void DirivMerge()
@@ -36,68 +39,74 @@ namespace phi
 
 		void addKHCords(vector<float> cords)
 		{
+			// note some weirdness with 2 ++positions/1 --position and differences between -1 and -2 and etc are to make sure that upon adding values the position is at the h before the k after value
 			auto position = khList.begin();
 
 			for (int i = 0; i < cords.size() - 2; i += 2)		// through extensive bug fixing, there is no longer any bugs
 			{
-				position = khList.begin();
-				if (khList.size() > 10)	//1a															// this is for potential optimization of process ( check efficiency of ++position to validate/invalidate )
+				if (khFirstPass)
 				{
-					//cout << "1a \n";
-					float guess = cords[i] / khList[khList.size() - 2];
-					for (int i = 0; i < round(guess * khList.size() / 2) * 2; ++i) { ++position; }		// division & multiplication of 2 is to make sure that it is even so that it corresponds to k
-					if (cords[i] > *position) { for (position; cords[i] > *position; ++position) {} }	// --position because insert pushes indexed value back ( so it is like putting value
-					else { for (position; cords[i] < *position; --position) {} ++position; }			// between position and position++) ( and thus position should be list k before input k )
-					--position;
+					//cout << "_3b \n";
+					khList.push_back(cords[i]);
+					khList.push_back(cords[i + 1]);
+					khFirstPass = true;
 				}
-				else //1b
+				else
 				{
-					//cout << "1b \n";
-					const signed int khListSize = khList.size();
-					for (int iSub = 0; iSub < khListSize; ++iSub) //2a 
-					{ 
-						//cout << "2a \n";
-						if (cords[i] > *position) //2.1a
-						{ 
-							//cout << "2.1a \n";
-							++position;
-						}
-						else //2.1b
+					position = khList.begin();
+					if (khList.size() > 10)	//1a																				// this is for potential optimization of process ( check efficiency of ++position to validate/invalidate )
+					{
+						//cout << "1a \n";
+						if (cords[i] < khList[khList.size() - 2] && cords[i] > khList[0])
 						{
-							//cout << "2.1b \n"; 
+							float guess = cords[i] / khList[khList.size() - 2];
+							for (int i = 0; i < round(guess / 2) * 2; i++) { ++position; }	 									// division & multiplication of 2 is to make sure that it is even so that it corresponds to k
+							if (cords[i] > *position) { while (cords[i] > *position) { ++position; ++position; } }				// --position because insert pushes indexed value back ( so it is like putting value
+							else { while (cords[i] < *position) { --position; --position; } ++position; ++position; }			// between position and position++) ( and thus position should be list k before input k )
 							--position;
-							iSub = khListSize;
+						}
+						else if (cords[i] > khList[khList.size() - 2])									// For in case that 
+						{																				// the inputed K values
+							for (int i = 0; i < khList.size() - 1; i++)									// are either greater
+							{																			// or smaller than
+								++position;																// the respective greatest
+							}																			// or smallest ks already in list
 						}
 					}
-				}
+					else //1b
+					{
+						//cout << "1b \n";
+						if (cords[i] < khList[khList.size() - 2] && cords[i] > khList[0])
+						{
 
-
-				if (khListPass)//3a
-				{
-					//cout << "3 \n";
+							for (int i = 0; cords[i] > *position && i < khList.size() - 1; i += 2) //2.1a
+							{
+								//cout << "2.1a \n";
+								++position;
+								++position;
+							}
+							--position;
+						}
+						else if (cords[i] > khList[khList.size() - 2])
+						{
+							for (int i = 0; i < khList.size() - 1; i++)
+							{
+								++position;
+							}
+						}
+					}
+					//cout << "_3a \n";
 					if (cords[i] == *position)//3.1a				// in case that they share the same x value,
 					{												// average current y and new y. Note: if x values correspond too often,
-						//cout << "3.1a \n";
+						//cout << "_3.1a \n";
 						auto hPos = ++position;						// there will be a disproportionate amount of weight on new y over
 						*position = (*hPos + cords[i + 1]) / 2;		// previous ys
 					}
-					else//3.1b
-					{
-						//cout << "3.1b \n";
-						khList.insert(position, cords[i]);
-						khList.insert(position, cords[i + 1]);
-					}
-				}
-				else//3b
-				{
-					//cout << "3b \n";
-					khList.push_back(cords[i]);
-					khList.push_back(cords[i + 1]);
 				}
 			}
 		}
 	private:
-		bool khListPass = false;
+		bool khFirstPass = true;
 		bool indexTwoGap = true;
 		bool indexOneGap = true;
 	};
