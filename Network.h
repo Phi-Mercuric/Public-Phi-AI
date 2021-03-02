@@ -13,17 +13,17 @@ namespace phi
 	{
 	public:
 		vector<vector<Node>> net;
-		vector<signed int> nodes;
-		signed int layers;
-		signed int weightVariation = 10000; // max 10^x amount
-		Network(signed int Layers, vector<signed int> Nodes)
+		vector<unsigned int> nodes;
+		unsigned int layers;
+		unsigned int weightVariation = 10000; // max 10^x amount
+		Network(unsigned int Layers, vector<unsigned int> Nodes)
 		{
 			layers = Layers;
 			nodes = Nodes;
 			Node stanNode;
 
 			std::default_random_engine generator;													// for random weights
-			std::uniform_int_distribution<int> distribution(0-weightVariation, weightVariation);	//
+			std::uniform_int_distribution<int> distribution(0 - weightVariation, weightVariation);	//
 
 			int maxConnections = 0;
 			int maxNodes = 0;
@@ -33,7 +33,7 @@ namespace phi
 			//errori = 0;  cout << "check 1." << errori; errori++; // for checking for error location and etc
 
 			net.push_back({});
-			for (signed int node = 0; node < nodes[0]; node++)
+			for (unsigned int node = 0; node < nodes[0]; node++)
 			{
 				net[0].push_back(stanNode);
 			}
@@ -47,45 +47,55 @@ namespace phi
 						net[layer][node].connWeight.push_back(temp);	// allowing for variation in both pos and neg
 						//cout << net[layer][node].connWeight[connNum] << "\n";
 						//cout << net[layer][node].connWeight[connNum]; // note mem inefficiency
-					}											     
+					}
 				}
 			}
+		}
+
+		void compressNet() // goes through nodes and weights and compresses the values down. 
+		{
+			// often through the process that we will be going through, there will be ballooning of values of weights and bell curves. I think that this is what they mean
+			// by diminishing gradient problem, however it is not ballooning for them because they compress all of it down via sigmoid. Anyways, for instance we want to 
+			// avoid where there is like:  || 2 * 124032.~ - 1 * 113509.~ -> Equation(khList = {1, .000008, 2, .000008}) -> ~1 || this can be done by condensing/expanding 
+			// x inputs like: || 2 * (124032 * .000008) - 1 * (113509 * .000008) -> Equaiton(khList = {1, (.000008 * 12400), 2, (.000008 * 12400)}) ||
 		}
 
 		void backProp(vector<float> outputValues)
 		{
 			for (int layer = layers - 1; layer > 0; layer--)
 			{
-
-				if (layer == layers-1)
+				if (layer == layers - 1)
 				{
 					for (int node = 0; node < nodes[layer]; node++)
 					{
-						net[layer][node].cordList.push_back( net[layer][node].movingInp );
-						net[layer][node].cordList.push_back( outputValues[node] );
-						net[layer][node].movingTV = outputValues[node];
-						for (int conn = 0; conn < nodes[layer-1]; conn++)
-						{
-							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][node].value) / net[layer][node].connWeightAmt[conn];
-						}
+						net[layer][node].movingTrueVal = outputValues[node];
+						net[layer][node].xCordList.push_back(net[layer][node].movingInp);
+						net[layer][node].yCordList.push_back(outputValues[node]);
+						net[layer][node].connWeightAmt++;
+						for (int conn = 0; conn < nodes[layer - 1]; conn++)
+						{																																			// change this process by adding
+							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][node].value) / net[layer][node].connWeightAmt;	// in thing to understand change
+						}																																			// in bellcurve of prev function
 					}
 				}
 				else
 				{
 					for (int node = 0; node < nodes[layer]; node++)
 					{
-						float output = 0;
-						net[layer][node].cordList.push_back( net[layer][node].movingInp );
-						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)
-						{
-							output += net[layer][upNode].movingTV * net[layer][upNode].connWeight[node];
-						}
-						net[layer][node].cordList.push_back(output / nodes[layers]);
-
+						net[layer][node].connWeightAmt++;
 						for (int conn = 0; conn < nodes[layer - 1]; conn++)
 						{
-							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][node].value) / net[layer][node].connWeightAmt[conn];
+							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][conn].value) / net[layer][node].connWeightAmt;
 						}
+
+						float output = 0;
+						net[layer][node].xCordList.push_back(net[layer][node].movingInp);
+						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)									// calculating total amount that the function  
+						{																							// would have to have  
+							output += net[layer+1][upNode].movingTrueVal * net[layer+1][upNode].connWeight[node];	// 
+						}																							// 
+						net[layer][node].yCordList.push_back(output / nodes[layer]);								// 
+						net[layer][node].movingTrueVal = output / nodes[layer];
 					}
 				}
 			}
@@ -94,33 +104,38 @@ namespace phi
 		{
 			for (int layer = 0; layer < layers; layer++)
 			{
+				//cout << layer << " ";
 				for (int node = 0; node < nodes[layer]; node++)
 				{
+					//cout << node << ": \n";
 					float input = 0;
 					// input calcs:
 					if (layer == 0)
 					{
-						input = inputValues[node];		
+						//cout << input << ", ";
+						input = inputValues[node];
 					}
-					else 
+					else
 					{
-						for (signed int connNum = 0; connNum < nodes[layer - 1]; connNum++)										
-						{																									
+						for (unsigned int connNum = 0; connNum < nodes[layer - 1]; connNum++)
+						{
 							input += net[layer - 1][connNum].value * net[layer][node].connWeight[connNum] / weightVariation;
 						}
+						//cout << input << ", ";
 					}
 					net[layer][node].movingInp = input;
 					float output = 0;
-					signed short int calcLength;
+					unsigned int calcLength;
 
 					if (input > net[layer][node].khList[net[layer][node].khList.size() - 2])			// possible bug: if size is index, or if right side != last k in sequence for other reason
-					{																					// 
+					{																					//
 						for (int i = 2; i < net[layer][node].khList.size() - 2; i += 2)					// this is Calc for right side beyond plotted curve
 						{
 							output += (net[layer][node].khList[i] - net[layer][node].khList[i - 2]) * ((net[layer][node].khList[i + 1] - net[layer][node].khList[i - 1])
 								/ 2 + net[layer][node].khList[i - 1]);
 						}
-						input - net[layer][node].khList[net[layer][node].khList.size() - 2];
+						output = (input - net[layer][node].khList[net[layer][node].khList.size() - 2])/(net[layer][node].dimSmoothing 
+							+ (input - net[layer][node].khList[net[layer][node].khList.size() - 2]));
 					}
 					else
 					{
@@ -144,8 +159,128 @@ namespace phi
 						{
 							output += (net[layer][node].khList[1]) + (input / abs(input)) * sqrt(abs(input));	// bad lower end approx
 						}
-						net[layer][node].value = output;
+						//cout << output << "\n";
+					}
+					net[layer][node].value = output;
+				}
+			}
+		}
+
+
+
+		void DEBUG_backProp(vector<float> outputValues)
+		{
+			cout << "\n\nInitiating Back Prorogation . . .";
+			for (int layer = layers - 1; layer > 0; layer--)
+			{
+				cout << "\n   Layer: " << layer;
+				if (layer == layers - 1)
+				{
+					for (int node = 0; node < nodes[layer]; node++)
+					{
+						cout << "\n      Node: " << node;
+						cout << "\n         Pushing back (" << net[layer][node].movingInp << ", " << outputValues[node] << ")";
+						net[layer][node].movingTrueVal = outputValues[node];
+						net[layer][node].xCordList.push_back(net[layer][node].movingInp);
+						net[layer][node].yCordList.push_back(outputValues[node]);
+						net[layer][node].connWeightAmt++;
+						for (int conn = 0; conn < nodes[layer - 1]; conn++)
+						{																																			// change this process by adding
+							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][node].value) / net[layer][node].connWeightAmt;	// in thing to understand change
+						}																																			// in bellcurve of prev function
+					}
+				}
+				else
+				{
+					for (int node = 0; node < nodes[layer]; node++)
+					{
+						net[layer][node].connWeightAmt++;
+						for (int conn = 0; conn < nodes[layer - 1]; conn++)
+						{
+							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][conn].value) / net[layer][node].connWeightAmt;
 						}
+
+						float output = 0;
+						net[layer][node].xCordList.push_back(net[layer][node].movingInp);
+						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)									// calculating total amount that the function  
+						{																							// would have to have  
+							output += net[layer + 1][upNode].movingTrueVal * net[layer + 1][upNode].connWeight[node];	// 
+						}																							// 
+						net[layer][node].yCordList.push_back(output / nodes[layer]);								// 
+						net[layer][node].movingTrueVal = output / nodes[layer];
+						cout << "\n      Node: " << node;
+						cout << "\n         Pushing back (" << net[layer][node].movingInp << ", " << output / nodes[layer] << ")";
+					}
+				}
+			}
+		}
+		void DEBUG_Calculate(vector<float> inputValues)
+		{
+			cout << "\n\nInitiating Calculation . . .";
+			for (int layer = 0; layer < layers; layer++)
+			{
+				cout << "\n   Layer: " << layer;
+				for (int node = 0; node < nodes[layer]; node++)
+				{
+					cout << "\n      Node: " << node;
+					float input = 0;
+					cout << "\n         inputs ";
+					if (layer == 0)
+					{
+						cout << input;
+						input = inputValues[node];
+					}
+					else
+					{
+						for (unsigned int connNum = 0; connNum < nodes[layer - 1]; connNum++)
+						{
+							input += net[layer - 1][connNum].value * net[layer][node].connWeight[connNum] / weightVariation;
+						}
+						cout << input;
+					}
+					net[layer][node].movingInp = input;
+					float output = 0;
+					unsigned int calcLength;
+
+					if (input > net[layer][node].khList[net[layer][node].khList.size() - 2])			// possible bug: if size is index, or if right side != last k in sequence for other reason
+					{																					//
+						cout << "\n         Input is beyond khList... Proceeding with diminishing end protocol";	//
+						for (int i = 2; i < net[layer][node].khList.size() - 2; i += 2)					// this is Calc for right side beyond plotted curve
+						{
+							output += (net[layer][node].khList[i] - net[layer][node].khList[i - 2]) * ((net[layer][node].khList[i + 1] - net[layer][node].khList[i - 1])
+								/ 2 + net[layer][node].khList[i - 1]);
+						}
+						output = (input - net[layer][node].khList[net[layer][node].khList.size() - 2]) / (net[layer][node].dimSmoothing
+							+ (input - net[layer][node].khList[net[layer][node].khList.size() - 2]));
+					}
+					else
+					{
+						for (calcLength = 0; input > net[layer][node].khList[calcLength]; calcLength += 2) {} // calcLength = the k after the input so if input=k+.00001		// Bell curve
+						if (calcLength >= 2)																  // then calcLength = 2.											//
+						{																																						//
+							cout << "\n         Input is within khList... ";																												//
+							for (int i = 2; i < calcLength; i += 2) // calculating all parts of bell curve that are fully defined (aka areas of whole right triangle)			// calculator
+							{																																					// (This is
+								output += (net[layer][node].khList[i] - net[layer][node].khList[i - 2]) * ((net[layer][node].khList[i + 1] - net[layer][node].khList[i - 1])	//  somewhat
+									/ 2 + net[layer][node].khList[i - 1]);																										//  tested
+							}																																					//  could still
+							// (x-k0)( ((x-k0)*(h-h0))/(2(k-k0)) + h0 ) | Finding area of part of traingle																		//  have problems)
+							output += (input - net[layer][node].khList[calcLength - 2]) * (((input - net[layer][node].khList[calcLength - 2]) *									//
+								(net[layer][node].khList[calcLength + 1] - net[layer][node].khList[calcLength - 1])) / (2 * (net[layer][node].khList[calcLength]				//
+									- net[layer][node].khList[calcLength - 2])) + net[layer][node].khList[calcLength - 1]);														//
+							//cout << "output " << output;
+							//cout << "\n";
+							//cout << "\n";
+						}
+						else
+						{
+							cout << "\n         Input is beyond khList... Proceeding with diminishing end protocol";	//
+							output += (net[layer][node].khList[1]) + (input / abs(input)) * sqrt(abs(input));	// bad lower end approx
+						}
+						//cout << output << "\n";
+					}
+					cout << "\n          Output: " << output;
+					net[layer][node].value = output;
 				}
 			}
 		}
