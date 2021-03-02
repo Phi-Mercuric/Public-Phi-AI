@@ -10,31 +10,31 @@ public:
 
 	int variation = 0;
 	vector<float> random = { };
-	signed int rdmIndex = 0;
+	unsigned int rdmIndex = 0;
 
-	randomClass( int variationAmt, signed int layers, vector<signed int> nodes, signed int iterationAmt)
+	randomClass(int variationAmt, unsigned int layers, vector<unsigned int> nodes, unsigned int iterationAmt)
 	{
 		std::default_random_engine generator;
-		std::uniform_int_distribution<int> distribution(0-variationAmt, variationAmt);
-		int dice_roll = distribution(generator);  // generates number in the range 1..6 
+		std::uniform_int_distribution<int> distribution(0 - variationAmt * 100, variationAmt * 100);
+		int dice_roll = distribution(generator);  // generates number in the range 1..6
 
-		for (signed int layer = 0; layer < layers; layer++)
+		for (unsigned int layer = 0; layer < layers; layer++)
 		{
 			for (int i = 0; i < nodes[layer] * 6; i++)
 			{
-				random.push_back(distribution(generator));
+				random.push_back(distribution(generator) / 100);
 			}
 		}
-		for (signed int i = 0; i < iterationAmt; i++)
+		for (unsigned int i = 0; i < iterationAmt; i++)
 		{
-			for (signed int node = 0; node < nodes[0]; node++)
+			for (unsigned int node = 0; node < nodes[0]; node++)
 			{
-				random.push_back(distribution(generator));
+				random.push_back(distribution(generator) / 100);
 			}
 		}
 		for (int i = 0; i < 100; i++)
 		{
-			random.push_back(distribution(generator));
+			random.push_back(distribution(generator) / 100);
 		}
 	}
 
@@ -45,4 +45,3 @@ public:
 		return something;
 	}
 };
-

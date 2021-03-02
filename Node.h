@@ -13,15 +13,18 @@ namespace phi
 
 		float value;
 		float movingInp;							// needed to make backprop more effiecent
-		vector<float> khList;						// lines between (k,h) is the derivative of bell curve
+		vector<float> khList;						// lines between (k,h) is the derivative of bell curve (should have and may change to list of ks and hs
 		float endCords[4] = { 0, 0 };				// start cords and end cords
 		vector<float> avDeviation;					// average deviation between last x and x (x, averageDeviation)
 		vector<float> cordList;						// derived from back propagation
 		vector<short int> connWeight;				// weight of connection (uncompressed via /10000)
-		vector<short int> connWeightAmt;			// amount of previous weight iterations
+		signed int connWeightAmt;					// general value of iterations that occurred
 		float dimSmoothing;
 		float dimHeight;
-		int movingTV;								// correct value that is used for back propogation
+		int movingTrueVal;							// correct value that is used for back propagation
+		int movingValWeighted;						// signed amount | value that the node contributed to the end result
+		vector<float> xCordList;					
+		vector<float> yCordList;
 
 		// Value Throughput Functions (like sigmoid)
 		void DirivMerge()
@@ -65,7 +68,7 @@ namespace phi
 							else { while (cords[i] < *position) { --position; --position; } ++position; ++position; }			// between position and position++) ( and thus position should be list k before input k )
 							--position;
 						}
-						else if (cords[i] > khList[khList.size() - 2])									// For in case that 
+						else if (cords[i] > khList[khList.size() - 2])									// For in case that
 						{																				// the inputed K values
 							for (int i = 0; i < khList.size() - 1; i++)									// are either greater
 							{																			// or smaller than
@@ -78,7 +81,6 @@ namespace phi
 						//cout << "1b \n";
 						if (cords[i] < khList[khList.size() - 2] && cords[i] > khList[0])
 						{
-
 							for (int i = 0; cords[i] > *position && i < khList.size() - 1; i += 2) //2.1a
 							{
 								//cout << "2.1a \n";
