@@ -68,34 +68,39 @@ namespace phi
 				{
 					for (int node = 0; node < nodes[layer]; node++)
 					{
+						vector<float> xCords;
+						vector<float> yCords;
 						net[layer][node].movingTrueVal = outputValues[node];
-						net[layer][node].xCordList.push_back(net[layer][node].movingInp);
-						net[layer][node].yCordList.push_back(outputValues[node]);
+						xCords.push_back(net[layer][node].movingInp);
+						yCords.push_back(outputValues[node]);
 						net[layer][node].connWeightAmt++;
 						for (int conn = 0; conn < nodes[layer - 1]; conn++)
-						{																																			// change this process by adding
-							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][node].value) / net[layer][node].connWeightAmt;	// in thing to understand change
-						}																																			// in bellcurve of prev function
+						{																																				// change this process by adding
+							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer][node].movingTrueVal) / net[layer][node].connWeightAmt;	// in thing to understand change
+						}																																				//
+						net[layer][node].addOrderedCords(xCords, yCords);																								// in bellcurve of prev function
 					}
 				}
 				else
 				{
 					for (int node = 0; node < nodes[layer]; node++)
 					{
+						vector<float> xCords;
+						vector<float> yCords;
 						net[layer][node].connWeightAmt++;
 						for (int conn = 0; conn < nodes[layer - 1]; conn++)
 						{
 							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][conn].value) / net[layer][node].connWeightAmt;
 						}
-
 						float output = 0;
-						net[layer][node].xCordList.push_back(net[layer][node].movingInp);
+						xCords.push_back(net[layer][node].movingInp);
 						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)									// calculating total amount that the function  
 						{																							// would have to have  
 							output += net[layer+1][upNode].movingTrueVal * net[layer+1][upNode].connWeight[node];	// 
 						}																							// 
-						net[layer][node].yCordList.push_back(output / nodes[layer]);								// 
+						yCords.push_back(output / nodes[layer]);													// 
 						net[layer][node].movingTrueVal = output / nodes[layer];
+						net[layer][node].addOrderedCords(xCords, yCords);
 					}
 				}
 			}
@@ -104,15 +109,11 @@ namespace phi
 		{
 			for (int layer = 0; layer < layers; layer++)
 			{
-				//cout << layer << " ";
 				for (int node = 0; node < nodes[layer]; node++)
 				{
-					//cout << node << ": \n";
 					float input = 0;
-					// input calcs:
 					if (layer == 0)
 					{
-						//cout << input << ", ";
 						input = inputValues[node];
 					}
 					else
@@ -121,7 +122,6 @@ namespace phi
 						{
 							input += net[layer - 1][connNum].value * net[layer][node].connWeight[connNum] / weightVariation;
 						}
-						//cout << input << ", ";
 					}
 					net[layer][node].movingInp = input;
 					float output = 0;
@@ -151,22 +151,16 @@ namespace phi
 							output += (input - net[layer][node].khList[calcLength - 2]) * (((input - net[layer][node].khList[calcLength - 2]) *									//
 								(net[layer][node].khList[calcLength + 1] - net[layer][node].khList[calcLength - 1])) / (2 * (net[layer][node].khList[calcLength]				//
 									- net[layer][node].khList[calcLength - 2])) + net[layer][node].khList[calcLength - 1]);														//
-							//cout << "output " << output;
-							//cout << "\n";
-							//cout << "\n";
 						}
 						else
 						{
-							output += (net[layer][node].khList[1]) + (input / abs(input)) * sqrt(abs(input));	// bad lower end approx
+							output += (net[layer][node].khList[1]) + input / (10 + abs(input));	// bad lower end approx
 						}
-						//cout << output << "\n";
 					}
 					net[layer][node].value = output;
 				}
 			}
 		}
-
-
 
 		void DEBUG_backProp(vector<float> outputValues)
 		{
@@ -180,38 +174,44 @@ namespace phi
 					{
 						cout << "\n      Node: " << node;
 						cout << "\n         Pushing back (" << net[layer][node].movingInp << ", " << outputValues[node] << ")";
+						vector<float> xCords;
+						vector<float> yCords;
 						net[layer][node].movingTrueVal = outputValues[node];
-						net[layer][node].xCordList.push_back(net[layer][node].movingInp);
-						net[layer][node].yCordList.push_back(outputValues[node]);
+						xCords.push_back(net[layer][node].movingInp);
+						yCords.push_back(outputValues[node]);
 						net[layer][node].connWeightAmt++;
 						for (int conn = 0; conn < nodes[layer - 1]; conn++)
-						{																																			// change this process by adding
-							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][node].value) / net[layer][node].connWeightAmt;	// in thing to understand change
-						}																																			// in bellcurve of prev function
+						{																																				// change this process by adding
+							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer][node].movingTrueVal) / net[layer][node].connWeightAmt;	// in thing to understand change
+						}																																				//
+						net[layer][node].addOrderedCords(xCords, yCords);																								// in bellcurve of prev function
 					}
 				}
 				else
 				{
 					for (int node = 0; node < nodes[layer]; node++)
 					{
+						vector<float> xCords;
+						vector<float> yCords;
 						net[layer][node].connWeightAmt++;
 						for (int conn = 0; conn < nodes[layer - 1]; conn++)
 						{
 							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer - 1][conn].value) / net[layer][node].connWeightAmt;
 						}
-
 						float output = 0;
-						net[layer][node].xCordList.push_back(net[layer][node].movingInp);
+						xCords.push_back(net[layer][node].movingInp);
 						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)									// calculating total amount that the function  
 						{																							// would have to have  
 							output += net[layer + 1][upNode].movingTrueVal * net[layer + 1][upNode].connWeight[node];	// 
 						}																							// 
-						net[layer][node].yCordList.push_back(output / nodes[layer]);								// 
+						yCords.push_back(output / nodes[layer]);													// 
 						net[layer][node].movingTrueVal = output / nodes[layer];
+						net[layer][node].addOrderedCords(xCords, yCords);
 						cout << "\n      Node: " << node;
 						cout << "\n         Pushing back (" << net[layer][node].movingInp << ", " << output / nodes[layer] << ")";
 					}
 				}
+
 			}
 		}
 		void DEBUG_Calculate(vector<float> inputValues)
@@ -268,16 +268,12 @@ namespace phi
 							output += (input - net[layer][node].khList[calcLength - 2]) * (((input - net[layer][node].khList[calcLength - 2]) *									//
 								(net[layer][node].khList[calcLength + 1] - net[layer][node].khList[calcLength - 1])) / (2 * (net[layer][node].khList[calcLength]				//
 									- net[layer][node].khList[calcLength - 2])) + net[layer][node].khList[calcLength - 1]);														//
-							//cout << "output " << output;
-							//cout << "\n";
-							//cout << "\n";
 						}
 						else
 						{
 							cout << "\n         Input is beyond khList... Proceeding with diminishing end protocol";	//
-							output += (net[layer][node].khList[1]) + (input / abs(input)) * sqrt(abs(input));	// bad lower end approx
+							output += (net[layer][node].khList[1]) + input / (10 + abs(input));	// bad lower end approx
 						}
-						//cout << output << "\n";
 					}
 					cout << "\n          Output: " << output;
 					net[layer][node].value = output;
