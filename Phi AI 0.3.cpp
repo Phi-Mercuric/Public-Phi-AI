@@ -5,6 +5,7 @@
 #include <ctime>
 #include <random>
 #include "randomClass.h"
+#include <chrono>
 
 using namespace std;
 
@@ -46,11 +47,9 @@ void calculateNetwork()
 	{
 		for (unsigned int node = 0; node < newNetwork.nodes[layer]; ++node)
 		{
-			newNetwork.net[layer][node].addKHCords({ rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), 
-				rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator() });
+			newNetwork.net[layer][node].addKHCords({ rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator()});
 		}
 	}
-	vector<float> temp;
 
 	cout << "Net finished in " << time(nullptr) - timeStart << " seconds. \n";
 	timeStart = time(nullptr);
@@ -63,37 +62,45 @@ void calculateNetwork()
 			cout << "\n \n \n ----------Next Iteration:---------- \n";
 			cout << "Inputs: \n";
 		}
-		temp.clear();
+		vector<float> tempInput;
 		for (int i0 = 0; i0 < newNetwork.nodes[0]; i0++)
 		{
 			float temp0 = rdmClass.rdmGenerator();
-			temp.push_back(temp0);
+			tempInput.push_back(temp0);
 			if (visualIO)
 			{
 				cout << temp0 << ", ";
 			}
 		}
-		newNetwork.calculate(temp);
+		newNetwork.calculate(tempInput);
+		vector<float> BP_Input;
 		if (visualIO)
 		{
 			 cout << "\n \n Outputs: \n";
-			vector<float> BP_Input;
 			for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
 			{
 				float something = newNetwork.net[input_Layers - 1][node].value + 0;
 				BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value);
 				cout << something << ", ";
 			}
-			newNetwork.backProp(BP_Input);
 		}
 		else
 		{
-			vector<float> BP_Input;
 			for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
 			{
 				BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value);
 			}
-			newNetwork.backProp(BP_Input);
+		}
+		newNetwork.backProp(BP_Input);
+		if (newNetwork.net[1][0].xCordList.size() >= 2)
+		{
+			for (vector<phi::Node>& layer : newNetwork.net)
+			{
+				for (phi::Node& node: layer)
+				{
+					node.pointGrouper(3);
+				}
+			}
 		}
 		if (visualIO==false)
 		{
@@ -149,11 +156,9 @@ void DEBUG_calculateNetwork()
 	{
 		for (unsigned int node = 0; node < newNetwork.nodes[layer]; ++node)
 		{
-			newNetwork.net[layer][node].addKHCords({ rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator(),
-				rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator() });
+			newNetwork.net[layer][node].addKHCords({ rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator() });
 		}
 	}
-	vector<float> temp;
 
 	cout << "Net finished in " << time(nullptr) - timeStart << " seconds. \n";
 	timeStart = time(nullptr);
@@ -166,37 +171,46 @@ void DEBUG_calculateNetwork()
 			cout << "\n \n \n ----------Next Iteration:---------- \n";
 			cout << "Inputs: \n";
 		}
-		temp.clear();
+		vector<float> tempInput;
 		for (int i0 = 0; i0 < newNetwork.nodes[0]; i0++)
 		{
 			float temp0 = rdmClass.rdmGenerator();
-			temp.push_back(temp0);
+			tempInput.push_back(temp0);
 			if (visualIO)
 			{
 				cout << temp0 << ", ";
 			}
 		}
-		newNetwork.DEBUG_Calculate(temp);
+		newNetwork.DEBUG_Calculate(tempInput);
+		vector<float> BP_Input;
 		if (visualIO)
 		{
 			cout << "\n \n Outputs: \n";
-			vector<float> BP_Input;
 			for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
 			{
 				float something = newNetwork.net[input_Layers - 1][node].value + 0;
 				BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value);
 				cout << something << ", ";
 			}
-			newNetwork.DEBUG_backProp(BP_Input);
 		}
 		else
 		{
-			vector<float> BP_Input;
 			for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
 			{
 				BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value);
 			}
-			newNetwork.DEBUG_backProp(BP_Input);
+		}
+		newNetwork.DEBUG_Calculate(BP_Input);
+		if (newNetwork.net[1][0].xCordList.size() >= 2)
+		{
+			for (vector<phi::Node>& layer : newNetwork.net)
+			{
+				for (phi::Node& node : layer)
+				{
+					node.pointGrouper(3);
+					node.BCConstructor();
+				}
+			}
 		}
 		if (visualIO == false)
 		{
@@ -224,7 +238,7 @@ int main()
 		cin >> input;
 		if (input == 'n')
 		{
-			thing == false;
+			thing = false;
 		}
 		else if (input == 'b')
 		{
@@ -235,4 +249,4 @@ int main()
 			calculateNetwork();
 		}
 	}
-}
+} 
