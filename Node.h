@@ -42,6 +42,8 @@ namespace phi
 			//constraint checker
 			for (signed int i = 0; i < xCompCords.size()-1; i += 3) // FIX THIS
 			{
+				//cout << "\nOut of Bounds: \nCord size: " << xCompCords.size() << " and " << yCompCords.size();
+				//cout << "\nIndex Number: " << i;
 				// checking for upper constraint ( \frac{\left(x-x_{0}\right)\left(y_{2}-y_{0}\right)\left(2-\frac{x-x_{0}}{x_{2}-x_{0}}\right)}{x_{2}-x_{0}}+y_{0} )
 				if ( ((xCompCords[i+1] - xCompCords[i]) * (yCompCords[i+2] -yCompCords[i]) * (2 - ((xCompCords[i+1] - xCompCords[i]) / (xCompCords[i+2] - xCompCords[i])))) 
 					/ (xCompCords[i+2] - xCompCords[i]) + yCompCords[i] < xCompCords[i+1])
@@ -89,33 +91,34 @@ namespace phi
 			// This needs to be changed into a function that is better
 			// Doesn't conform to constraints of BCConstructor
 			signed int outPoints = amountOfOutputPoints;
-			float k = 0;
-			float h = 0;
+			float xVal = 0;
+			float yVal = 0;
 			signed int lastPos = 0;
 			vector<float> xTempCordList;
 			vector<float> yTempCordList;
 			for (signed int slice = 0; slice < outPoints; slice++)
 			{
-				cout << "a";
+				//cout << "\nBCConstructor:" << "\n   number of y cords: " << yCordList.size() << "\n   number of x cords: " << xCordList.size();
 				signed int index = lastPos;
 				for (; index < xCordList.size() / outPoints; index++)
 				{																	// first third is used as an iteration amount here
-					cout << "b";
-					k += xCordList[index];											//
-					h += yCordList[index];											//
+					xVal += xCordList[index];										//
+					yVal += yCordList[index];										//
 				}																	// and then by the end, it equals xCordList.size() / 3 rounded up
 				if (xCompCords.size() == amountOfOutputPoints)
 				{
-					xTempCordList.push_back(( xCompCords[slice] * compCordAmt + k) / (compCordAmt + index));
-					yTempCordList.push_back((yCompCords[slice] * compCordAmt + h) / (compCordAmt + index));
+					compCordAmt += index;
+					xTempCordList.push_back(( xCompCords[slice] * compCordAmt + xVal) / (compCordAmt));
+					yTempCordList.push_back(( yCompCords[slice] * compCordAmt + yVal) / (compCordAmt));
 				}
 				else
 				{
-					xTempCordList.push_back(k / index);
-					xTempCordList.push_back(h / index);
+					xTempCordList.push_back(xVal / index);
+					yTempCordList.push_back(yVal / index);
 				}
 				lastPos = index;
 			}
+			//cout << "\nPoint Grouper: " << "\n   xCompCord Size: " << xTempCordList.size() << "\n   yCompCord Size: " << yTempCordList.size();
 			xCompCords = { xTempCordList };
 			yCompCords = { yTempCordList };
 		}
