@@ -47,13 +47,13 @@ void calculateNetwork()
 	{
 		for (unsigned int node = 0; node < newNetwork.nodes[layer]; ++node)
 		{
-			newNetwork.net[layer][node].addKHCords({ rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator()});
+			newNetwork.net[layer][node].addKHCords({ rdmClass.rdmGenerator(), rdmClass.rdmGenerator(), rdmClass.rdmGenerator() });
 		}
 	}
 
 	cout << "Net finished in " << time(nullptr) - timeStart << " seconds. \n";
 	timeStart = time(nullptr);
-	cout << "Calculating x" << iterationAmt <<" . . . \n";
+	cout << "Calculating x" << iterationAmt << " . . . \n";
 
 	for (int i = 0; i < iterationAmt; i++)
 	{
@@ -76,7 +76,7 @@ void calculateNetwork()
 		vector<float> BP_Input;
 		if (visualIO)
 		{
-			 cout << "\n \n Outputs: \n";
+			cout << "\n \n Outputs: \n";
 			for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
 			{
 				float something = newNetwork.net[input_Layers - 1][node].value + 0;
@@ -96,13 +96,14 @@ void calculateNetwork()
 		{
 			for (vector<phi::Node>& layer : newNetwork.net)
 			{
-				for (phi::Node& node: layer)
+				for (phi::Node& node : layer)
 				{
 					node.pointGrouper(3);
+					node.BCConstructor();
 				}
 			}
 		}
-		if (visualIO==false)
+		if (visualIO == false)
 		{
 			cout << "\n iteration #" << i + 1;
 		}
@@ -200,7 +201,8 @@ void DEBUG_calculateNetwork()
 				BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value);
 			}
 		}
-		newNetwork.DEBUG_Calculate(BP_Input);
+		newNetwork.DEBUG_backProp(BP_Input);
+		cout << "\n\n" << newNetwork.net[1][0].xCordList.size();
 		if (newNetwork.net[1][0].xCordList.size() >= 2)
 		{
 			for (vector<phi::Node>& layer : newNetwork.net)

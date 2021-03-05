@@ -38,18 +38,21 @@ namespace phi
 		}
 		int BCConstructor()
 		{
+			//cout << "\nBCConstructor Called:";
 			//constraint checker
-			for (signed int i = 0; i < xCompCords.size(); i += 3)
+			for (signed int i = 0; i < xCompCords.size()-1; i += 3) // FIX THIS
 			{
 				// checking for upper constraint ( \frac{\left(x-x_{0}\right)\left(y_{2}-y_{0}\right)\left(2-\frac{x-x_{0}}{x_{2}-x_{0}}\right)}{x_{2}-x_{0}}+y_{0} )
 				if ( ((xCompCords[i+1] - xCompCords[i]) * (yCompCords[i+2] -yCompCords[i]) * (2 - ((xCompCords[i+1] - xCompCords[i]) / (xCompCords[i+2] - xCompCords[i])))) 
 					/ (xCompCords[i+2] - xCompCords[i]) + yCompCords[i] < xCompCords[i+1])
 				{
+					//cout << "\nERROR: OUT OF BOUNDS (top)";
 					return 1;
 				}
 				// checking for lower constraint ( \frac{h\left(x-x_{0}\right)^{2}}{2\left(x_{2}-x_{0}\right)}+y_{0} )
 				if ( ( (yCompCords[i+2]) - yCompCords[i]) * ( pow(xCompCords[i+1]- xCompCords[0], 2) ) / (pow(xCompCords[i+2] - xCompCords[i], 2)) + yCompCords[i] > xCompCords[i+1])
 				{
+					//cout << "\nERROR: OUT OF BOUNDS (top)";
 					return 1;
 				}
 			}
@@ -57,6 +60,7 @@ namespace phi
 			for (signed int i = 0; i < xCompCords.size(); i += 3)
 			{
 				// relative k0 & h0 (origin):
+				//cout << "\nKH Origin: " << xCompCords[i] << ", " << yCompCords[i];
 				khList.push_back(xCompCords[i]);
 				khList.push_back(yCompCords[i]);
 				// relative k1 & h1 (derivative vertex):
@@ -71,10 +75,13 @@ namespace phi
 						(xCompCords[i+2] - xCompCords[i]))));																															 // accept float types
 				}
 				khList.push_back((2 * (yCompCords[i+2] - yCompCords[i])) / (xCompCords[i+2] - xCompCords[i]));
+				//cout << "\nKH Middle: " << khList[2] << ", " << khList[3];
 				// relative k2 & h2 (where derivitive == 0)
 				khList.push_back(xCompCords[i+2]);
-				khList.push_back(xCompCords[i+2]);
+				khList.push_back(yCompCords[i+2]);
+				//cout << "\nKH Last: " << xCompCords[i+2] << ", " << yCompCords[i + 2];
 			}
+			//cout << "\nBCConstructor Finished";
 		}
 		void pointGrouper(signed int amountOfOutputPoints) // MAKE SURE IS DEVISABLE BY THREE, DON'T CALCULATE MORE POINTS THAN PREV IT
 		{
@@ -87,11 +94,13 @@ namespace phi
 			signed int lastPos = 0;
 			vector<float> xTempCordList;
 			vector<float> yTempCordList;
-			for (signed int slice = 0; slice < outPoints; outPoints++)
+			for (signed int slice = 0; slice < outPoints; slice++)
 			{
+				cout << "a";
 				signed int index = lastPos;
 				for (; index < xCordList.size() / outPoints; index++)
 				{																	// first third is used as an iteration amount here
+					cout << "b";
 					k += xCordList[index];											//
 					h += yCordList[index];											//
 				}																	// and then by the end, it equals xCordList.size() / 3 rounded up
@@ -112,12 +121,15 @@ namespace phi
 		}
 		int addOrderedCords(vector<float> xcords, vector<float> ycords)	// not most efficient
 		{
+			//cout << "\n OrderedPairAdder Called: ";
 			if (xcords.size() != ycords.size())
 			{
+				//cout << "\n    xcords don't match ycords";
 				return 1;
 			}
 			if (xCordList.empty())
 			{
+				//cout << "\n XCordList Empty... Following protocol";
 				//cout << "\nstarting empty protocol";
 				//cout << "\nadding " << xcords[0] << ", " << ycords[0];
 				xCordList.push_back(xcords[0]);
@@ -126,22 +138,44 @@ namespace phi
 				ycords.erase(ycords.begin());
 			}
 			if (xcords.empty()) { return 0; }
-			auto position = xCordList.begin();
-			for (unsigned int index = 0; index < xcords.size()-1; index++)
+			auto xposition = xCordList.begin();
+			auto yposition = yCordList.begin();
+			//cout << "Check 0";
+			for (unsigned int index = 0; index < xcords.size(); index++)
 			{
-				if (xcords[index] < xCordList[xCordList.size() - 1])
+				//cout << "Check 1";
+				if (xcords[index] < xCordList[xCordList.size()-1])
 				{
-					while (*position < xcords[index])
+					//cout << "\n" << xCordList.size();
+					while (xcords[index] > *xposition)
 					{
-						++position;
+						//cout << "\nposition value: " << *xposition;
+						//cout << "\nxCordList value: " << xcords[index];
+						++xposition;
+						++yposition;
 					}
-					xCordList.insert(position, xcords[index]);
-					yCordList.insert(position, ycords[index]);
+					//cout << "\nxcords:";
+					//for (float xcord : xcords)
+					//{
+					//	cout << xcord << ", ";
+					//}
+					//cout << "\nycords:";
+					//for (float ycord : ycords)
+					//{
+					//	cout << ycord << ", ";
+					//}
+					//cout << "\nindex: " << index;
+					//cout << "\n" << xcords[index];
+					//cout << "\n" << ycords[index];
+					xCordList.insert(xposition, xcords[index]);
+					yCordList.insert(yposition, ycords[index]);
+					//cout << "\n    Adding " << xcords[index] << ", " << ycords[index] << " via insert";
 				}
 				else
 				{
 					xCordList.push_back(xcords[index]);
 					yCordList.push_back(ycords[index]);
+					//cout << "\n    Adding " << xcords[index] << ", " << ycords[index];
 				}
 			}
 			return 0;
@@ -151,7 +185,7 @@ namespace phi
 			// note some weirdness with 2 ++positions/1 --position and differences between -1 and -2 and etc are to make sure that upon adding values the position is at the h before the k after value
 			auto position = khList.begin();
 
-			for (int i = 0; i < cords.size() - 2; i += 2)		// through extensive bug fixing, there is no longer any bugs
+			for (int i = 0; i < cords.size()-1; i += 2)		// through extensive bug fixing, there is no longer any bugs
 			{
 				if (khFirstPass)
 				{
@@ -176,7 +210,7 @@ namespace phi
 						}
 						else if (cords[i] > khList[khList.size() - 2])									// For in case that
 						{																				// the inputed K values
-							for (int i = 0; i < khList.size() - 1; i++)									// are either greater
+							for (int i = 0; i < khList.size(); i++)									// are either greater
 							{																			// or smaller than
 								++position;																// the respective greatest
 							}																			// or smallest ks already in list
@@ -187,7 +221,7 @@ namespace phi
 						//cout << "1b \n";
 						if (cords[i] < khList[khList.size() - 2] && cords[i] > khList[0])
 						{
-							for (int i = 0; cords[i] > *position && i < khList.size() - 1; i += 2) //2.1a
+							for (int i = 0; cords[i] > *position && i < khList.size(); i += 2) //2.1a
 							{
 								//cout << "2.1a \n";
 								++position;
@@ -197,7 +231,7 @@ namespace phi
 						}
 						else if (cords[i] > khList[khList.size() - 2])
 						{
-							for (int i = 0; i < khList.size() - 1; i++)
+							for (int i = 0; i < khList.size(); i++)
 							{
 								++position;
 							}
