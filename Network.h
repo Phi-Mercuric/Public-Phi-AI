@@ -71,6 +71,7 @@ namespace phi
 						vector<float> xCords;
 						vector<float> yCords;
 						net[layer][node].movingTrueVal = outputValues[node];
+						cout << "\nfb958" << net[layer][node].movingInp << " | " << outputValues[node];
 						xCords.push_back(net[layer][node].movingInp);
 						yCords.push_back(outputValues[node]);
 						net[layer][node].connWeightAmt++;
@@ -120,30 +121,40 @@ namespace phi
 					{
 						for (unsigned int connNum = 0; connNum < nodes[layer - 1]; connNum++)
 						{
-							input += net[layer - 1][connNum].value * net[layer][node].connWeight[connNum] / weightVariation;
+							cout << "\n    -cf3a4" << net[layer - 1][connNum].value;
+							cout << "\n    -cf3b4" << net[layer][node].connWeight[connNum];
+							cout << "\n    -cf3c4" << weightVariation;
+							input += (net[layer - 1][connNum].value * net[layer][node].connWeight[connNum]) / weightVariation;
+							cout << "cf34 " << input;
 						}
 					}
+					cout << "\n1230 " << input;
 					net[layer][node].movingInp = input;
 					float output = 0;
 					unsigned int calcLength;
 
 					if (input > net[layer][node].khList[net[layer][node].khList.size() - 2])			// possible bug: if size is index, or if right side != last k in sequence for other reason
 					{																					//
+						cout << "\n790c";
 						for (int i = 2; i < net[layer][node].khList.size() - 2; i += 2)					// this is Calc for right side beyond plotted curve
 						{
 							output += (net[layer][node].khList[i] - net[layer][node].khList[i - 2]) * ((net[layer][node].khList[i + 1] - net[layer][node].khList[i - 1])
 								/ 2 + net[layer][node].khList[i - 1]);
+							cout << "\n   90c \n      " << output << "  #ab" << i/2;
 						}
 						output = (input - net[layer][node].khList[net[layer][node].khList.size() - 2])/(net[layer][node].dimSmoothing 
 							+ (input - net[layer][node].khList[net[layer][node].khList.size() - 2]));
+						cout << "\n   90c \n      " << output << "  #b";
 					}
 					else
 					{
 						for (calcLength = 0; input > net[layer][node].khList[calcLength]; calcLength += 2) {} // calcLength = the k after the input								// Bell curve
+						cout << "\n790cb";
 						if (calcLength >= 2)																																	//
 						{																																						//
 							for (int i = 2; i < calcLength; i += 2) // calculating all parts of bell curve that are fully defined (aka areas of whole right triangle)			// calculator
 							{																																					// (This is
+								cout << "\n   90cb \n      " << output << "  #ab-" << calcLength << "-" << i / 2;
 								output += (net[layer][node].khList[i] - net[layer][node].khList[i - 2]) * ((net[layer][node].khList[i + 1] - net[layer][node].khList[i - 1])	//  somewhat
 									/ 2 + net[layer][node].khList[i - 1]);																										//  tested
 							}																																					//  could still
@@ -151,10 +162,13 @@ namespace phi
 							output += (input - net[layer][node].khList[calcLength - 2]) * (((input - net[layer][node].khList[calcLength - 2]) *									//
 								(net[layer][node].khList[calcLength + 1] - net[layer][node].khList[calcLength - 1])) / (2 * (net[layer][node].khList[calcLength]				//
 									- net[layer][node].khList[calcLength - 2])) + net[layer][node].khList[calcLength - 1]);														//
+							cout << "\n   90cb \n      " << output << "  #b-" << calcLength << "\n\n" << input << " | " << net[layer][node].khList[calcLength - 2] << " | " 
+								<< net[layer][node].khList[calcLength + 1] << " | " << net[layer][node].khList[calcLength - 1] << " | " << output << "\n\n";
 						}
 						else
 						{
 							output += (net[layer][node].khList[1]) + input / (10 + abs(input));	// bad lower end approx
+							cout << "\n   90cb \n      " << output << "  #c-" << " | " << input << " | " << net[layer][node].khList[1];
 						}
 					}
 					net[layer][node].value = output;
@@ -162,7 +176,7 @@ namespace phi
 			}
 		}
 
-		void DEBUG_backProp(vector<float> outputValues)
+		void DEBUG_backProp(vector<float> outputValues, const bool debug = false)
 		{
 			cout << "\n\nInitiating Back Prorogation . . .";
 			for (int layer = layers - 1; layer > 0; layer--)
@@ -184,7 +198,7 @@ namespace phi
 						{																																				// change this process by adding
 							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer][node].movingTrueVal) / net[layer][node].connWeightAmt;	// in thing to understand change
 						}																																				//
-						net[layer][node].addOrderedCords(xCords, yCords);																								// in bellcurve of prev function
+						net[layer][node].addOrderedCords(xCords, yCords, debug);																								// in bellcurve of prev function
 					}
 				}
 				else
@@ -206,7 +220,7 @@ namespace phi
 						}																							// 
 						yCords.push_back(output / nodes[layer]);													// 
 						net[layer][node].movingTrueVal = output / nodes[layer];
-						net[layer][node].addOrderedCords(xCords, yCords);
+						net[layer][node].addOrderedCords(xCords, yCords, debug);
 						cout << "\n      Node: " << node;
 						cout << "\n         Pushing back (" << net[layer][node].movingInp << ", " << output / nodes[layer] << ")";
 					}

@@ -6,6 +6,7 @@
 #include <random>
 #include "randomClass.h"
 #include <chrono>
+#include <iomanip>
 
 using namespace std;
 
@@ -59,7 +60,7 @@ void calculateNetwork()
 	{
 		if (visualIO)
 		{
-			cout << "\n \n \n ----------Next Iteration:---------- \n";
+			cout << "\n \n \n ---------Iteration "<< i << "---------- \n";
 			cout << "Inputs: \n";
 		}
 		vector<float> tempInput;
@@ -92,14 +93,14 @@ void calculateNetwork()
 			}
 		}
 		newNetwork.backProp(BP_Input);
-		if (newNetwork.net[1][0].xCordList.size() >= 2)
+		if (newNetwork.net[1][0].xCordList.size() >= 3)
 		{
-			for (vector<phi::Node>& layer : newNetwork.net)
+			for (const auto& layer : newNetwork.net)
 			{
-				for (phi::Node& node : layer)
+				for (phi::Node node : layer)
 				{
-					node.pointGrouper(3);
-					node.BCConstructor();
+					node.pointGrouper(3, true);
+					node.BCConstructor(true);
 				}
 			}
 		}
@@ -169,7 +170,7 @@ void DEBUG_calculateNetwork()
 	{
 		if (visualIO)
 		{
-			cout << "\n \n \n ----------Next Iteration:---------- \n";
+			cout << "\n \n \n ----------Iteration " << i << " ---------- \n";
 			cout << "Inputs: \n";
 		}
 		vector<float> tempInput;
@@ -189,8 +190,8 @@ void DEBUG_calculateNetwork()
 			cout << "\n \n Outputs: \n";
 			for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
 			{
-				float something = newNetwork.net[input_Layers - 1][node].value + 0;
-				BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value);
+				float something = newNetwork.net[input_Layers - 1][node].value / (1 + abs(newNetwork.net[input_Layers - 1][node].value));
+				BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value / (1 + abs(newNetwork.net[input_Layers - 1][node].value)));
 				cout << something << ", ";
 			}
 		}
@@ -198,22 +199,23 @@ void DEBUG_calculateNetwork()
 		{
 			for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
 			{
-				BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value);
+				BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value / (1 + abs(newNetwork.net[input_Layers - 1][node].value)));
 			}
 		}
-		newNetwork.DEBUG_backProp(BP_Input);
+		newNetwork.DEBUG_backProp(BP_Input, true);
 		cout << "\n\n" << newNetwork.net[1][0].xCordList.size();
-		if (newNetwork.net[1][0].xCordList.size() >= 2)
+		if (newNetwork.net[1][0].xCordList.size() >= 3)
 		{
-			for (vector<phi::Node>& layer : newNetwork.net)
+			for (const auto& layer : newNetwork.net)
 			{
-				for (phi::Node& node : layer)
+				for (phi::Node node : layer)
 				{
-					node.pointGrouper(3);
-					node.BCConstructor();
+					node.pointGrouper(3, true);
+					node.BCConstructor(true);
 				}
 			}
 		}
+
 		if (visualIO == false)
 		{
 			cout << "\n iteration #" << i + 1;
@@ -235,6 +237,7 @@ int main()
 	bool thing = true;
 	while (thing)
 	{
+		float something = 1 / 4;
 		cout << "Would you like to make and run Phi Net? (y/n/b) \n";
 		char input;
 		cin >> input;
