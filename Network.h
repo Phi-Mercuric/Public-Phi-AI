@@ -62,7 +62,7 @@ namespace phi
 
 		void backProp(vector<float> outputValues)
 		{
-			for (int layer = layers - 1; layer > 0; layer--)
+			for (int layer = layers - 1; layer >= 0; layer--)
 			{
 				if (layer == layers - 1)
 				{
@@ -176,10 +176,11 @@ namespace phi
 			}
 		}
 
+		// adapt this with debug or no debug
 		void DEBUG_backProp(vector<float> outputValues, const bool debug = false)
 		{
 			cout << "\n\nInitiating Back Prorogation . . .";
-			for (int layer = layers - 1; layer > 0; layer--)
+			for (int layer = layers - 1; layer >= 0; layer--)
 			{
 				cout << "\n   Layer: " << layer;
 				if (layer == layers - 1)
@@ -199,6 +200,25 @@ namespace phi
 							net[layer][node].connWeight[conn] = (net[layer][node].connWeight[conn] + net[layer][node].movingTrueVal) / net[layer][node].connWeightAmt;	// in thing to understand change
 						}																																				//
 						net[layer][node].addOrderedCords(xCords, yCords, debug);																								// in bellcurve of prev function
+					}
+				}
+				else if (layer == 0)
+				{
+					for (int node = 0; node < nodes[layer]; node++)
+					{
+						float output = 0;
+						vector<float> xCords;
+						vector<float> yCords;
+						xCords.push_back(net[layer][node].movingInp);
+						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)									// calculating total amount that the function  
+						{																							// would have to have  
+							output += net[layer + 1][upNode].movingTrueVal * net[layer + 1][upNode].connWeight[node];	// 
+						}																							// 
+						yCords.push_back(output / nodes[layer]);													// 
+						net[layer][node].movingTrueVal = output / nodes[layer];
+						net[layer][node].addOrderedCords(xCords, yCords, debug);
+						cout << "\n      Node: " << node;
+						cout << "\n         Pushing back (" << net[layer][node].movingInp << ", " << output / nodes[layer] << ")";
 					}
 				}
 				else

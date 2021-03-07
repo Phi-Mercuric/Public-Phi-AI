@@ -46,50 +46,59 @@ namespace phi
 					cout << "\n   Out of Bounds Checker: \n      Cord size: " << xCompCords.size() << " and " << yCompCords.size();
 					cout << "\n      Index Number: " << i;
 				}
+				if (xCompCords[i] == xCompCords[i + 1] || xCompCords[i] == xCompCords[i + 2] || yCompCords[i] == yCompCords[i + 1] || yCompCords[i] == yCompCords[i + 2])
+				{
+					if (debug) { cout << "\n      ERROR: OVERLAPING POINTS"; }
+					return 1;
+				}
 				// checking for upper constraint ( \frac{\left(x-x_{0}\right)\left(y_{2}-y_{0}\right)\left(2-\frac{x-x_{0}}{x_{2}-x_{0}}\right)}{x_{2}-x_{0}}+y_{0} )
 				if (((xCompCords[i + 1] - xCompCords[i]) * (yCompCords[i + 2] - yCompCords[i]) * (2 - ((xCompCords[i + 1] - xCompCords[i]) / (xCompCords[i + 2] - xCompCords[i]))))
-					/ (xCompCords[i + 2] - xCompCords[i]) + yCompCords[i] < xCompCords[i + 1])
+					/ (xCompCords[i + 2] - xCompCords[i]) + yCompCords[i] <= yCompCords[i + 1])
 				{
 					if (debug) { cout << "\n      ERROR: OUT OF BOUNDS (top)\n"; }
 					return 1;
 				}
 				// checking for lower constraint ( \frac{h\left(x-x_{0}\right)^{2}}{2\left(x_{2}-x_{0}\right)}+y_{0} )
-				if (((yCompCords[i + 2]) - yCompCords[i]) * (pow(xCompCords[i + 1] - xCompCords[0], 2)) / (pow(xCompCords[i + 2] - xCompCords[i], 2)) + yCompCords[i] > xCompCords[i + 1])
+				if (((yCompCords[i + 2]) - yCompCords[i]) * (pow(xCompCords[i + 1] - xCompCords[0], 2)) / (pow(xCompCords[i + 2] - xCompCords[i], 2)) + yCompCords[i] >= yCompCords[i + 1])
 				{
 					if (debug) { cout << "\n      ERROR: OUT OF BOUNDS (bottom)\n"; }
 					return 1;
 				}
 			}
 			khList.clear();
+			vector<float> tempkhList;
 			for (signed int i = 0; i < xCompCords.size(); i += 3)
 			{
 				// relative k0 & h0 (origin):
 				if (debug) { cout << "\n   calc for index " << i;
 				cout << "\n       KH Origin: " << xCompCords[i] << ", " << yCompCords[i]; }
-				khList.push_back(xCompCords[i]);
-				khList.push_back(yCompCords[i]);
+				tempkhList.push_back(xCompCords[i]);
+				tempkhList.push_back(yCompCords[i]);
 				// relative k1 & h1 (derivative vertex):
+				cout << "\ngrdmnip " << xCompCords[i] << " | " << yCompCords[i] << " | " << xCompCords[i + 1] << " | " << yCompCords[i + 1] << " | " << xCompCords[i + 2] << " | " << yCompCords[i + 2];
 				if (0 > yCompCords[i + 1] - yCompCords[i] - ((yCompCords[i + 2] - yCompCords[i]) * (xCompCords[i + 1] - xCompCords[i])) / (xCompCords[i + 2] - xCompCords[i]))
 				{
-					khList.push_back(((xCompCords[i + 2] - xCompCords[i]) * (yCompCords[i + 1] - yCompCords[i]) + (yCompCords[i + 2] - yCompCords[i]) * (xCompCords[i + 1] - xCompCords[i]) *
-						((xCompCords[i + 1] - xCompCords[i]) / (xCompCords[i + 2] - xCompCords[i]) - 2)) / (yCompCords[i + 1] - yCompCords[i + 2]));
+					tempkhList.push_back((((xCompCords[i + 2] - xCompCords[i]) * (yCompCords[i + 1] - yCompCords[i]) + (yCompCords[i + 2] - yCompCords[i]) * (xCompCords[i + 1] - xCompCords[i]) *
+						((xCompCords[i + 1] - xCompCords[i]) / ((xCompCords[i + 2] - xCompCords[i]) - 2))) / (yCompCords[i + 1] - yCompCords[i + 2])));
 				}
 				else
 				{
-					khList.push_back((((yCompCords[i + 2] - yCompCords[i]) * (xCompCords[i + 1] - xCompCords[i]) * (xCompCords[i + 1] - xCompCords[i])) / ((yCompCords[i + 1] - yCompCords[i]) * // no ^ 2 because it doesn't
+					tempkhList.push_back((((yCompCords[i + 2] - yCompCords[i]) * (xCompCords[i + 1] - xCompCords[i]) * (xCompCords[i + 1] - xCompCords[i])) / ((yCompCords[i + 1] - yCompCords[i]) * // no ^ 2 because it doesn't
 						(xCompCords[i + 2] - xCompCords[i]))));																															 // accept float types
 				}
-				khList.push_back((2 * (yCompCords[i + 2] - yCompCords[i])) / (xCompCords[i + 2] - xCompCords[i]));
-				if (debug) { cout << "\n      KH Middle: " << khList[2] << ", " << khList[3]; }
+				tempkhList.push_back((2 * (yCompCords[i + 2] - yCompCords[i])) / (xCompCords[i + 2] - xCompCords[i]));
+				if (debug) { cout << "\n      KH Middle: " << tempkhList[2] << ", " << tempkhList[3]; }
 				// relative k2 & h2 (where derivitive == 0)
-				khList.push_back(xCompCords[i + 2]);
-				khList.push_back(yCompCords[i + 2]);
+				tempkhList.push_back(xCompCords[i + 2]);
+				tempkhList.push_back(yCompCords[i + 2]);
+				addKHCords(tempkhList);
 				if (debug) { cout << "\n      KH Last: " << xCompCords[i + 2] << ", " << yCompCords[i + 2]; }
 			}
 			if (debug) { cout << "\n   BCConstructor Finished\n"; }
 		}
 		void pointGrouper(signed int amountOfOutputPoints, const bool debug = false) // MAKE SURE IS DEVISABLE BY THREE, DON'T CALCULATE MORE POINTS THAN PREV IT
 		{
+			cout << "\n   number of y cords: " << yCordList.size() << "\n   number of x cords: " << xCordList.size();
 			if (debug) { cout << "Point Grouper Called"; }
 			// Segmented into 3 via x cord amt and then averaged (I.E. | 1,1,2 | 5,6,9 | 10,15,100 | ). This is a bad way of going about this.
 			// This needs to be changed into a function that is better
