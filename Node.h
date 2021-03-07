@@ -42,6 +42,7 @@ namespace phi
 			//constraint checker
 			for (signed int i = 0; i < xCompCords.size() - 1; i += 3) // FIX THIS
 			{
+				cout << "\ngrdmnip " << xCompCords[i] << " | " << yCompCords[i] << " | " << xCompCords[i + 1] << " | " << yCompCords[i + 1] << " | " << xCompCords[i + 2] << " | " << yCompCords[i + 2];
 				if (debug) {
 					cout << "\n   Out of Bounds Checker: \n      Cord size: " << xCompCords.size() << " and " << yCompCords.size();
 					cout << "\n      Index Number: " << i;
@@ -75,7 +76,6 @@ namespace phi
 				tempkhList.push_back(xCompCords[i]);
 				tempkhList.push_back(yCompCords[i]);
 				// relative k1 & h1 (derivative vertex):
-				cout << "\ngrdmnip " << xCompCords[i] << " | " << yCompCords[i] << " | " << xCompCords[i + 1] << " | " << yCompCords[i + 1] << " | " << xCompCords[i + 2] << " | " << yCompCords[i + 2];
 				if (0 > yCompCords[i + 1] - yCompCords[i] - ((yCompCords[i + 2] - yCompCords[i]) * (xCompCords[i + 1] - xCompCords[i])) / (xCompCords[i + 2] - xCompCords[i]))
 				{
 					tempkhList.push_back((((xCompCords[i + 2] - xCompCords[i]) * (yCompCords[i + 1] - yCompCords[i]) + (yCompCords[i + 2] - yCompCords[i]) * (xCompCords[i + 1] - xCompCords[i]) *
@@ -111,9 +111,9 @@ namespace phi
 			vector<float> yTempCordList;
 			for (signed int slice = 0; slice < outPoints; slice++)
 			{
-				if (debug) { cout << "\n Slice #:" << slice << "\n   number of y cords: " << yCordList.size() << "\n   number of x cords: " << xCordList.size(); }
 				signed int index = lastPos;
-				for (; index < xCordList.size() / outPoints; index++)
+				if (debug) { cout << "\n Slice #:" << slice << "\n   number of y cords: " << yCordList.size() << "\n   number of x cords: " << xCordList.size(); }
+				for (; index < xCordList.size() / outPoints + lastPos; index++)
 				{																	// first third is used as an iteration amount here
 					cout << "\n                 " << xCordList[index];
 					cout << "\n                 " << yCordList[index];
