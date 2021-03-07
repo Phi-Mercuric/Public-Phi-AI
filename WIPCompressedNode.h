@@ -7,9 +7,9 @@ namespace phi
 {
 	class CompressedNode
 	{
-		float value;
-		float khList;
-		float sted[4];
-		vector<float> connectionWeights;
+		double value;
+		double khList;
+		double sted[4];
+		vector<double> connectionWeights;
 	};
 }
