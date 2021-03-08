@@ -27,6 +27,10 @@ public:
 		}
 		for (unsigned int i = 0; i < iterationAmt; i++)
 		{
+			for (signed int i = 0; i < nodes[layers - 1]; i++)
+			{
+				random.push_back(distribution(generator));
+			}
 			for (unsigned int node = 0; node < nodes[0]; node++)
 			{
 				random.push_back(distribution(generator) / 100);

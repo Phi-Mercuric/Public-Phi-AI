@@ -52,15 +52,15 @@ namespace phi
 			}
 		}
 
-		void compressNet() // goes through nodes and weights and compresses the values down. 
+		void compressNet() // goes through nodes and weights and compresses the values down.
 		{
 			// often through the process that we will be going through, there will be ballooning of values of weights and bell curves. I think that this is what they mean
-			// by diminishing gradient problem, however it is not ballooning for them because they compress all of it down via sigmoid. Anyways, for instance we want to 
-			// avoid where there is like:  || 2 * 124032.~ - 1 * 113509.~ -> Equation(khList = {1, .000008, 2, .000008}) -> ~1 || this can be done by condensing/expanding 
+			// by diminishing gradient problem, however it is not ballooning for them because they compress all of it down via sigmoid. Anyways, for instance we want to
+			// avoid where there is like:  || 2 * 124032.~ - 1 * 113509.~ -> Equation(khList = {1, .000008, 2, .000008}) -> ~1 || this can be done by condensing/expanding
 			// x inputs like: || 2 * (124032 * .000008) - 1 * (113509 * .000008) -> Equaiton(khList = {1, (.000008 * 12400), 2, (.000008 * 12400)}) ||
 		}
 
-		void backProp(vector<float> outputValues)
+		void backProp(vector<float> outputValues) // DEPRICIATED
 		{
 			for (int layer = layers - 1; layer >= 0; layer--)
 			{
@@ -95,18 +95,18 @@ namespace phi
 						}
 						float output = 0;
 						xCords.push_back(net[layer][node].movingInp);
-						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)									// calculating total amount that the function  
-						{																							// would have to have  
-							output += net[layer+1][upNode].movingTrueVal * net[layer+1][upNode].connWeight[node];	// 
-						}																							// 
-						yCords.push_back(output / nodes[layer]);													// 
+						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)									// calculating total amount that the function
+						{																							// would have to have
+							output += net[layer + 1][upNode].movingTrueVal * net[layer + 1][upNode].connWeight[node];	//
+						}																							//
+						yCords.push_back(output / nodes[layer]);													//
 						net[layer][node].movingTrueVal = output / nodes[layer];
 						net[layer][node].addOrderedCords(xCords, yCords);
 					}
 				}
 			}
 		}
-		void calculate(vector<float> inputValues)
+		void calculate(vector<float> inputValues) // DEPRICIATED
 		{
 			for (int layer = 0; layer < layers; layer++)
 			{
@@ -140,9 +140,9 @@ namespace phi
 						{
 							output += (net[layer][node].khList[i] - net[layer][node].khList[i - 2]) * ((net[layer][node].khList[i + 1] - net[layer][node].khList[i - 1])
 								/ 2 + net[layer][node].khList[i - 1]);
-							cout << "\n   90c \n      " << output << "  #ab" << i/2;
+							cout << "\n   90c \n      " << output << "  #ab" << i / 2;
 						}
-						output = (input - net[layer][node].khList[net[layer][node].khList.size() - 2])/(net[layer][node].dimSmoothing 
+						output = (input - net[layer][node].khList[net[layer][node].khList.size() - 2]) / (net[layer][node].dimSmoothing
 							+ (input - net[layer][node].khList[net[layer][node].khList.size() - 2]));
 						cout << "\n   90c \n      " << output << "  #b";
 					}
@@ -162,7 +162,7 @@ namespace phi
 							output += (input - net[layer][node].khList[calcLength - 2]) * (((input - net[layer][node].khList[calcLength - 2]) *									//
 								(net[layer][node].khList[calcLength + 1] - net[layer][node].khList[calcLength - 1])) / (2 * (net[layer][node].khList[calcLength]				//
 									- net[layer][node].khList[calcLength - 2])) + net[layer][node].khList[calcLength - 1]);														//
-							cout << "\n   90cb \n      " << output << "  #b-" << calcLength << "\n\n" << input << " | " << net[layer][node].khList[calcLength - 2] << " | " 
+							cout << "\n   90cb \n      " << output << "  #b-" << calcLength << "\n\n" << input << " | " << net[layer][node].khList[calcLength - 2] << " | "
 								<< net[layer][node].khList[calcLength + 1] << " | " << net[layer][node].khList[calcLength - 1] << " | " << output << "\n\n";
 						}
 						else
@@ -179,16 +179,22 @@ namespace phi
 		// adapt this with debug or no debug
 		void DEBUG_backProp(vector<float> outputValues, const bool debug = false)
 		{
-			cout << "\n\nInitiating Back Prorogation . . .";
+			if (debug) {
+				cout << "\n\nInitiating Back Prorogation . . .";
+			}
 			for (int layer = layers - 1; layer >= 0; layer--)
 			{
-				cout << "\n   Layer: " << layer;
+				if (debug) {
+					cout << "\n   Layer: " << layer;
+				}
 				if (layer == layers - 1)
 				{
 					for (int node = 0; node < nodes[layer]; node++)
 					{
-						cout << "\n      Node: " << node;
-						cout << "\n         Pushing back (" << net[layer][node].movingInp << ", " << outputValues[node] << ")";
+						if (debug) {
+							cout << "\n      Node: " << node;
+							cout << "\n         Pushing back (" << net[layer][node].movingInp << ", " << outputValues[node] << ")";
+						}
 						vector<float> xCords;
 						vector<float> yCords;
 						net[layer][node].movingTrueVal = outputValues[node];
@@ -210,15 +216,17 @@ namespace phi
 						vector<float> xCords;
 						vector<float> yCords;
 						xCords.push_back(net[layer][node].movingInp);
-						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)									// calculating total amount that the function  
-						{																							// would have to have  
-							output += net[layer + 1][upNode].movingTrueVal * net[layer + 1][upNode].connWeight[node];	// 
-						}																							// 
-						yCords.push_back(output / nodes[layer]);													// 
+						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)										// calculating total amount that the function
+						{																								// would have to have
+							output += net[layer + 1][upNode].movingTrueVal * net[layer + 1][upNode].connWeight[node];	//
+						}																								//
+						yCords.push_back(output / nodes[layer]);														//
 						net[layer][node].movingTrueVal = output / nodes[layer];
 						net[layer][node].addOrderedCords(xCords, yCords, debug);
-						cout << "\n      Node: " << node;
-						cout << "\n         Pushing back (" << net[layer][node].movingInp << ", " << output / nodes[layer] << ")";
+						if (debug) {
+							cout << "\n      BPNode: " << node;
+							cout << "\n         BPPushing back (" << net[layer][node].movingInp << ", " << output / nodes[layer] << ")";
+						}
 					}
 				}
 				else
@@ -234,34 +242,41 @@ namespace phi
 						}
 						float output = 0;
 						xCords.push_back(net[layer][node].movingInp);
-						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)									// calculating total amount that the function  
-						{																							// would have to have  
-							output += net[layer + 1][upNode].movingTrueVal * net[layer + 1][upNode].connWeight[node];	// 
-						}																							// 
-						yCords.push_back(output / nodes[layer]);													// 
-						net[layer][node].movingTrueVal = output / nodes[layer];
+						for (int upNode = 0; upNode < nodes[layer + 1]; upNode++)									// calculating total amount that the function
+						{																							// would have to have
+							output += net[layer + 1][upNode].movingTrueVal * net[layer + 1][upNode].connWeight[node] / 10000;	//
+						}																							//
+						yCords.push_back(output / nodes[layer + 1]);													//
+						net[layer][node].movingTrueVal = output / nodes[layer + 1];
 						net[layer][node].addOrderedCords(xCords, yCords, debug);
-						cout << "\n      Node: " << node;
-						cout << "\n         Pushing back (" << net[layer][node].movingInp << ", " << output / nodes[layer] << ")";
+						if (debug) {
+							cout << "\n      BPNode: " << node;
+							cout << "\n         BPPushing back (" << net[layer][node].movingInp << ", " << output / nodes[layer] << ")";
+						}
 					}
 				}
-
 			}
 		}
-		void DEBUG_Calculate(vector<float> inputValues)
+		void DEBUG_Calculate(vector<float> inputValues, bool debug = false)
 		{
-			cout << "\n\nInitiating Calculation . . .";
+			if (debug) {
+				cout << "\n\nInitiating Calculation . . .";
+			}
 			for (int layer = 0; layer < layers; layer++)
 			{
-				cout << "\n   Layer: " << layer;
+				if (debug) {
+					cout << "\n   Layer: " << layer;
+				}
 				for (int node = 0; node < nodes[layer]; node++)
 				{
-					cout << "\n      Node: " << node;
+					if (debug) {
+						cout << "\n      Node: " << node;
+						cout << "\n         inputs ";
+					}
 					float input = 0;
-					cout << "\n         inputs ";
 					if (layer == 0)
 					{
-						cout << input;
+						if (debug) { cout << input; }
 						input = inputValues[node];
 					}
 					else
@@ -270,7 +285,9 @@ namespace phi
 						{
 							input += net[layer - 1][connNum].value * net[layer][node].connWeight[connNum] / weightVariation;
 						}
-						cout << input;
+						if (debug) {
+							cout << input;
+						}
 					}
 					net[layer][node].movingInp = input;
 					float output = 0;
@@ -278,7 +295,9 @@ namespace phi
 
 					if (input > net[layer][node].khList[net[layer][node].khList.size() - 2])			// possible bug: if size is index, or if right side != last k in sequence for other reason
 					{																					//
-						cout << "\n         Input is beyond khList... Proceeding with diminishing end protocol";	//
+						if (debug) {
+							cout << "\n         Input is beyond khList... Proceeding with diminishing end protocol";
+						}//
 						for (int i = 2; i < net[layer][node].khList.size() - 2; i += 2)					// this is Calc for right side beyond plotted curve
 						{
 							output += (net[layer][node].khList[i] - net[layer][node].khList[i - 2]) * ((net[layer][node].khList[i + 1] - net[layer][node].khList[i - 1])
@@ -292,7 +311,9 @@ namespace phi
 						for (calcLength = 0; input > net[layer][node].khList[calcLength]; calcLength += 2) {} // calcLength = the k after the input so if input=k+.00001		// Bell curve
 						if (calcLength >= 2)																  // then calcLength = 2.											//
 						{																																						//
-							cout << "\n         Input is within khList... ";																												//
+							if (debug) {
+								cout << "\n         Input is within khList... ";
+							}																											//
 							for (int i = 2; i < calcLength; i += 2) // calculating all parts of bell curve that are fully defined (aka areas of whole right triangle)			// calculator
 							{																																					// (This is
 								output += (net[layer][node].khList[i] - net[layer][node].khList[i - 2]) * ((net[layer][node].khList[i + 1] - net[layer][node].khList[i - 1])	//  somewhat
@@ -305,11 +326,15 @@ namespace phi
 						}
 						else
 						{
-							cout << "\n         Input is beyond khList... Proceeding with diminishing end protocol";	//
+							if (debug) {
+								cout << "\n         Input is beyond khList... Proceeding with diminishing end protocol";	//
+							}
 							output += (net[layer][node].khList[1]) + input / (10 + abs(input));	// bad lower end approx
 						}
 					}
-					cout << "\n          Output: " << output;
+					if (debug) {
+						cout << "\n          Output: " << output;
+					}
 					net[layer][node].value = output;
 				}
 			}
