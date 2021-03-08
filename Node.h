@@ -25,16 +25,15 @@ namespace phi
 		int movingTrueVal;							// correct value that is used for back propagation
 		int movingValWeighted;						// signed amount | value that the node contributed to the end result
 
-		signed int compCordAmt;				
-		vector<float> xCompCords;		
+		signed int compCordAmt;
+		vector<float> xCompCords;
 		vector<float> yCompCords;
-		vector<float> xCordList;					
+		vector<float> xCordList;
 		vector<float> yCordList;
 
 		// Value Throughput Functions (like sigmoid)
 		void DirivMerge()
 		{
-
 		}
 		int BCConstructor(bool debug = false)
 		{
@@ -42,8 +41,8 @@ namespace phi
 			//constraint checker
 			for (signed int i = 0; i < xCompCords.size() - 1; i += 3) // FIX THIS
 			{
-				cout << "\ngrdmnip " << xCompCords[i] << " | " << yCompCords[i] << " | " << xCompCords[i + 1] << " | " << yCompCords[i + 1] << " | " << xCompCords[i + 2] << " | " << yCompCords[i + 2];
 				if (debug) {
+					cout << "\nInputs: " << xCompCords[i] << " | " << yCompCords[i] << " | " << xCompCords[i + 1] << " | " << yCompCords[i + 1] << " | " << xCompCords[i + 2] << " | " << yCompCords[i + 2];
 					cout << "\n   Out of Bounds Checker: \n      Cord size: " << xCompCords.size() << " and " << yCompCords.size();
 					cout << "\n      Index Number: " << i;
 				}
@@ -71,8 +70,10 @@ namespace phi
 			for (signed int i = 0; i < xCompCords.size(); i += 3)
 			{
 				// relative k0 & h0 (origin):
-				if (debug) { cout << "\n   calc for index " << i;
-				cout << "\n       KH Origin: " << xCompCords[i] << ", " << yCompCords[i]; }
+				if (debug) {
+					cout << "\n   calc for index " << i;
+					cout << "\n       KH Origin: " << xCompCords[i] << ", " << yCompCords[i];
+				}
 				tempkhList.push_back(xCompCords[i]);
 				tempkhList.push_back(yCompCords[i]);
 				// relative k1 & h1 (derivative vertex):
@@ -98,8 +99,7 @@ namespace phi
 		}
 		void pointGrouper(signed int amountOfOutputPoints, const bool debug = false) // MAKE SURE IS DEVISABLE BY THREE, DON'T CALCULATE MORE POINTS THAN PREV IT
 		{
-			cout << "\n   number of y cords: " << yCordList.size() << "\n   number of x cords: " << xCordList.size();
-			if (debug) { cout << "Point Grouper Called"; }
+			if (debug) { cout << "Point Grouper Called"; cout << "\n   number of y cords: " << yCordList.size() << "\n   number of x cords: " << xCordList.size(); }
 			// Segmented into 3 via x cord amt and then averaged (I.E. | 1,1,2 | 5,6,9 | 10,15,100 | ). This is a bad way of going about this.
 			// This needs to be changed into a function that is better
 			// Doesn't conform to constraints of BCConstructor
@@ -115,8 +115,10 @@ namespace phi
 				if (debug) { cout << "\n Slice #:" << slice << "\n   number of y cords: " << yCordList.size() << "\n   number of x cords: " << xCordList.size(); }
 				for (; index < xCordList.size() / outPoints + lastPos; index++)
 				{																	// first third is used as an iteration amount here
-					cout << "\n                 " << xCordList[index];
-					cout << "\n                 " << yCordList[index];
+					if (debug) {
+						cout << "\n                 " << xCordList[index];
+						cout << "\n                 " << yCordList[index];
+					}
 					yCordList[index];
 					xVal += xCordList[index];										//
 					yVal += yCordList[index];										//
@@ -125,8 +127,8 @@ namespace phi
 				{
 					compCordAmt += index;
 					if (debug) { cout << "\n   Pushing Back (" << (xCompCords[slice] * compCordAmt + xVal) / (compCordAmt) << "), (" << (yCompCords[slice] * compCordAmt + yVal) / (compCordAmt) << ")"; }
-					xTempCordList.push_back(( xCompCords[slice] * compCordAmt + xVal) / (compCordAmt));
-					yTempCordList.push_back(( yCompCords[slice] * compCordAmt + yVal) / (compCordAmt));
+					xTempCordList.push_back((xCompCords[slice] * compCordAmt + xVal) / (compCordAmt));
+					yTempCordList.push_back((yCompCords[slice] * compCordAmt + yVal) / (compCordAmt));
 				}
 				else
 				{
@@ -136,9 +138,9 @@ namespace phi
 				}
 				lastPos = index;
 			}
-			if (debug) 
-			{ 
-				cout << "\n   Point Grouper: " << "\n      xCompCord Size: " << xTempCordList.size() << "\n      yCompCord Size: " << yTempCordList.size(); 
+			if (debug)
+			{
+				cout << "\n   Point Grouper: " << "\n      xCompCord Size: " << xTempCordList.size() << "\n      yCompCord Size: " << yTempCordList.size();
 				cout << "\n   Cords: \n";
 				for (int i = 0; i < xTempCordList.size(); i++)
 				{
@@ -151,15 +153,19 @@ namespace phi
 		}
 		int addOrderedCords(vector<float> xcords, vector<float> ycords, const bool debug = false)	// not most efficient
 		{
-			for (float xcord : xcords)
-			{
-				cout << "\n" << xcord;
+			if (debug) {
+				cout << "\n OrderedPairAdder Called: ";
+				cout << "\n xcords:";
+				for (float xcord : xcords)
+				{
+					cout << "\n" << xcord;
+				}
+				cout << "\n ycords:";
+				for (float ycord : ycords)
+				{
+					cout << "\n" << ycord;
+				}
 			}
-			for (float ycord : ycords)
-			{
-				cout << "\n" << ycord;
-			}
-			if (debug) { cout << "\n OrderedPairAdder Called: "; }
 			if (xcords.size() != ycords.size())
 			{
 				if (debug) { cout << "\n    xcords don't match ycords"; }
@@ -167,9 +173,11 @@ namespace phi
 			}
 			if (xCordList.empty())
 			{
-				if (debug) { cout << "\n   XCordList Empty... Following protocol"; 
-				cout << "\n      starting empty protocol";
-				cout << "\n      adding " << xcords[0] << ", " << ycords[0]; }
+				if (debug) {
+					cout << "\n   XCordList Empty... Following protocol";
+					cout << "\n      starting empty protocol";
+					cout << "\n      adding " << xcords[0] << ", " << ycords[0];
+				}
 				xCordList.push_back(xcords[0]);
 				yCordList.push_back(ycords[0]);
 				xcords.erase(xcords.begin());
@@ -180,31 +188,33 @@ namespace phi
 			auto yposition = yCordList.begin();
 			for (unsigned int index = 0; index < xcords.size(); index++)
 			{
-				if (xcords[index] < xCordList[xCordList.size()-1])
+				if (xcords[index] < xCordList[xCordList.size() - 1])
 				{
 					if (debug) { cout << "\n   xCordListSize: " << xCordList.size(); }
 					while (xcords[index] > *xposition)
 					{
-						if (debug) { cout << "\n   position value: " << *xposition;
-							cout << "\n   xCordList value: " << xcords[index]; }
+						if (debug) {
+							cout << "\n   position value: " << *xposition;
+							cout << "\n   xCordList value: " << xcords[index];
+						}
 						++xposition;
 						++yposition;
 					}
-						if (debug) {
-							cout << "\n   xcords:"; 
-							for (float xcord : xcords)
-							{
-								cout << xcord << ", ";
-							}
-							cout << "\n   ycords:";
-							for (float ycord : ycords)
-							{
-								cout << ycord << ", ";
-							}
-							cout << "\n   index: " << index;
-							cout << "\n   xcords" << xcords[index];
-							cout << "\n   ycords" << ycords[index];
+					if (debug) {
+						cout << "\n   xcords:";
+						for (float xcord : xcords)
+						{
+							cout << xcord << ", ";
 						}
+						cout << "\n   ycords:";
+						for (float ycord : ycords)
+						{
+							cout << ycord << ", ";
+						}
+						cout << "\n   index: " << index;
+						cout << "\n   xcords" << xcords[index];
+						cout << "\n   ycords" << ycords[index];
+					}
 					xCordList.insert(xposition, xcords[index]);
 					yCordList.insert(yposition, ycords[index]);
 					if (debug) { cout << "\n    Adding " << xcords[index] << ", " << ycords[index] << " via insert"; }
@@ -216,7 +226,10 @@ namespace phi
 					if (debug) { cout << "\n    Adding " << xcords[index] << ", " << ycords[index]; }
 				}
 			}
-			cout << "\np7to" << xCordList.size();
+			if (debug)
+			{
+				cout << "\nxCordList Size at end of orderedPairAdder" << xCordList.size();
+			}
 			return 0;
 		}
 		void addKHCords(vector<float> cords, const bool debug = false)
@@ -224,7 +237,7 @@ namespace phi
 			// note some weirdness with 2 ++positions/1 --position and differences between -1 and -2 and etc are to make sure that upon adding values the position is at the h before the k after value
 			auto position = khList.begin();
 
-			for (int i = 0; i < cords.size()-1; i += 2)		// through extensive bug fixing, there is no longer any bugs
+			for (int i = 0; i < cords.size() - 1; i += 2)		// through extensive bug fixing, there is no longer any bugs
 			{
 				if (khFirstPass)
 				{

@@ -10,7 +10,8 @@
 
 using namespace std;
 
-void calculateNetwork()
+// DEPRICIATED
+void calculateNetwork() // DEPRICIATED
 {
 	unsigned int input_Layers;
 	vector<unsigned int> input_Nodes;
@@ -60,7 +61,7 @@ void calculateNetwork()
 	{
 		if (visualIO)
 		{
-			cout << "\n \n \n ---------Iteration "<< i << "---------- \n";
+			cout << "\n \n \n ---------Iteration " << i << "---------- \n";
 			cout << "Inputs: \n";
 		}
 		vector<float> tempInput;
@@ -119,30 +120,46 @@ void calculateNetwork()
 		}*/
 	cout << "done \n";
 }
+//
 
 void DEBUG_calculateNetwork(bool debug = false, unsigned int debugNum = 0)
 {
 	if (debugNum > 0)
 	{
-		unsigned int input_Layers = debugNum;
+		unsigned int input_Layers;
 		vector<unsigned int> input_Nodes;
-		for (signed int i = 0; i < debugNum; i++)
+		unsigned int iterationAmt;
+		unsigned int inputVariation;
+		char inputLetter;
+
+		input_Layers = debugNum;
+
+		input_Nodes.reserve(debugNum);
+		for (signed int  i = 0; i < debugNum; i++)
 		{
 			input_Nodes.push_back(debugNum);
 		}
-		double output = 500;
+
+		float memAmtRaw = 500;
 		for (unsigned int i = 1; i < input_Layers; i++)
 		{
-			output += (input_Nodes[i] / 724 * input_Nodes[i - 1] / 724);
+			memAmtRaw += (input_Nodes[i] / 724 * input_Nodes[i - 1] / 724);
 		}
-		unsigned int iterationAmt = 5;
-		unsigned int inputVariation = 10000;
+
+		cout << "approx mem usage: " << memAmtRaw << "mb " << "(" << memAmtRaw / 1024 << "gb) \n";
+
+		iterationAmt = debugNum;
+
+		inputVariation = 10000;
+
 		bool visualIO = true;
-		cout << "Initializing Net . . . \n";
+
+		std::cout << "Initializing Net . . . \n";
 		int timeStart = time(nullptr);
-		//phi::Network somethingNetwork(input_Layers, input_Nodes);
+
 		randomClass rdmClass(inputVariation, input_Layers, input_Nodes, iterationAmt);
 		phi::Network newNetwork(input_Layers, input_Nodes);
+
 		for (unsigned short int layer = 0; layer < newNetwork.layers; ++layer)
 		{
 			for (unsigned int node = 0; node < newNetwork.nodes[layer]; ++node)
@@ -151,103 +168,105 @@ void DEBUG_calculateNetwork(bool debug = false, unsigned int debugNum = 0)
 			}
 		}
 
-		cout << "Net finished in " << time(nullptr) - timeStart << " seconds. \n";
+		if (debug) { std::cout << "Net finished in " << time(nullptr) - timeStart << " seconds. \n"; }
 		timeStart = time(nullptr);
-		cout << "Calculating x" << iterationAmt << " . . . \n";
+		if (debug) { std::cout << "Calculating x" << iterationAmt << " . . . \n"; }
 
 		for (int i = 0; i < iterationAmt; i++)
 		{
 			if (visualIO)
 			{
-				cout << "\n \n \n ----------Iteration " << i << " ---------- \n";
-				cout << "Inputs: \n";
+				if (debug) { std::cout << "\n \n \n ----------Iteration " << i << " ---------- \n"; }
+				if (debug) { std::cout << "Inputs: \n"; }
 			}
 			vector<float> tempInput;
+
+			//inputing random values
 			for (int i0 = 0; i0 < newNetwork.nodes[0]; i0++)
 			{
-				float temp0 = rdmClass.rdmGenerator();
-				tempInput.push_back(temp0);
 				if (visualIO)
 				{
-					cout << temp0 << ", ";
+					float temp0 = rdmClass.rdmGenerator();
+					std::cout << temp0 << ", ";
+					tempInput.push_back(temp0);
+				}
+				else
+				{
+					tempInput.push_back(rdmClass.rdmGenerator());
 				}
 			}
-			if (debug)
+
+			//says debug but is just normal
+			newNetwork.DEBUG_Calculate(tempInput, debug);
+
+			if (visualIO)
 			{
-				newNetwork.DEBUG_Calculate(tempInput);
-				vector<float> BP_Input;
-				cout << "\n \n Outputs: \n";
-				for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
+				std::cout << "\n \n Outputs: \n";
+			}
+
+			//inputting output values to temp vector
+			vector<float> BP_Input;
+			for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
+			{
+				if (debug)
 				{
-					float something = newNetwork.net[input_Layers - 1][node].value / (1 + abs(newNetwork.net[input_Layers - 1][node].value));
-					BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value / (1 + abs(newNetwork.net[input_Layers - 1][node].value)));
-					cout << something << ", ";
+					float inputTempVal = rdmClass.rdmGenerator() / 100;
+					BP_Input.push_back(inputTempVal);
+					cout << inputTempVal;
 				}
-				newNetwork.DEBUG_backProp(BP_Input, true);
+				else
+				{
+					BP_Input.push_back(rdmClass.rdmGenerator());
+				}
+			}
+
+			// back propagating the temp vector
+			newNetwork.DEBUG_backProp(BP_Input, true);
+			for (const auto& layer : newNetwork.net)
+			{
+				for (const phi::Node& node : layer)
+				{
+					if (debug) { std::cout << "\nfjkodips   " << node.xCordList.size(); }
+					if (debug) { std::cout << "\nfjkodips   " << node.yCordList.size(); }
+				}
+			}
+
+			// grouping variables and constructing the bell curve 
+			if (newNetwork.net[1][0].xCordList.size() >= 3)
+			{
 				for (const auto& layer : newNetwork.net)
 				{
 					for (phi::Node node : layer)
 					{
-						cout << "\nfjkodips   " << node.xCordList.size();
-						cout << "\nfjkodips   " << node.yCordList.size();
-					}
-				}
-				if (newNetwork.net[1][0].xCordList.size() >= 3)
-				{
-					for (const auto& layer : newNetwork.net)
-					{
-						for (phi::Node node : layer)
-						{
-							node.pointGrouper(3, true);
-							node.BCConstructor(true);
-						}
-					}
-				}
-			}
-			else
-			{
-				newNetwork.calculate(tempInput);
-				vector<float> BP_Input;
-				if (visualIO)
-				{
-					cout << "\n \n Outputs: \n";
-					for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
-					{
-						float something = newNetwork.net[input_Layers - 1][node].value + 0;
-						BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value);
-						cout << something << ", ";
-					}
-				}
-				else
-				{
-					for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
-					{
-						BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value);
-					}
-				}
-				newNetwork.backProp(BP_Input);
-				if (newNetwork.net[1][0].xCordList.size() >= 3)
-				{
-					for (const auto& layer : newNetwork.net)
-					{
-						for (phi::Node node : layer)
-						{
-							node.pointGrouper(3, true);
-							node.BCConstructor(true);
-						}
+						node.pointGrouper(3, debug);
+						node.BCConstructor(debug);
 					}
 				}
 			}
 			if (visualIO == false)
 			{
-				cout << "\n iteration #" << i + 1;
+				std::cout << "\n iteration #" << i + 1;
 			}
 		}
+		std::cout << "\nFinished in " << time(nullptr) - timeStart << " seconds. \n";
+		/*
+			for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
+			{
+				float output = newNetwork.net[input_Layers - 1][node].value;
+				cout << output << "\n";
+			}*/
+		std::cout << "done \n";
+		return;
 	}
 	unsigned int input_Layers;
 	vector<unsigned int> input_Nodes;
+	unsigned int iterationAmt;
+	unsigned int inputVariation;
+	char inputLetter;
+
 	cout << "How many layers do you wish to make? \n";
 	cin >> input_Layers;
+
 	for (int i = 0; i < input_Layers; i++)
 	{
 		cout << "How many nodes in layer " << i + 1 << " ? \n";
@@ -255,27 +274,31 @@ void DEBUG_calculateNetwork(bool debug = false, unsigned int debugNum = 0)
 		cin >> localInput;
 		input_Nodes.push_back(localInput);
 	}
-	double output = 500;
+
+	float memAmtRaw = 500;
 	for (unsigned int i = 1; i < input_Layers; i++)
 	{
-		output += (input_Nodes[i] / 724 * input_Nodes[i - 1] / 724);
+		memAmtRaw += (input_Nodes[i] / 724 * input_Nodes[i - 1] / 724);
 	}
-	cout << "approx mem usage: " << output << "mb " << "(" << output / 1024 << "gb) \n";
+
+	cout << "approx mem usage: " << memAmtRaw << "mb " << "(" << memAmtRaw / 1024 << "gb) \n";
+
 	cout << "how many iterations?";
-	unsigned int iterationAmt;
 	cin >> iterationAmt;
+
 	cout << "what should the input variation be?";
-	unsigned int inputVariation;
 	cin >> inputVariation;
+
 	cout << "would you like to see the inputs and outputs? (slows process) (y/n)";
-	char inputLetter;
 	cin >> inputLetter;
 	bool visualIO = inputLetter == 'y';
-	cout << "Initializing Net . . . \n";
+
+	std::cout << "Initializing Net . . . \n";
 	int timeStart = time(nullptr);
-	//phi::Network somethingNetwork(input_Layers, input_Nodes);
+
 	randomClass rdmClass(inputVariation, input_Layers, input_Nodes, iterationAmt);
 	phi::Network newNetwork(input_Layers, input_Nodes);
+
 	for (unsigned short int layer = 0; layer < newNetwork.layers; ++layer)
 	{
 		for (unsigned int node = 0; node < newNetwork.nodes[layer]; ++node)
@@ -284,110 +307,94 @@ void DEBUG_calculateNetwork(bool debug = false, unsigned int debugNum = 0)
 		}
 	}
 
-	cout << "Net finished in " << time(nullptr) - timeStart << " seconds. \n";
+	if (debug) { std::cout << "Net finished in " << time(nullptr) - timeStart << " seconds. \n"; }
 	timeStart = time(nullptr);
-	cout << "Calculating x" << iterationAmt << " . . . \n";
+	if (debug) { std::cout << "Calculating x" << iterationAmt << " . . . \n"; }
 
 	for (int i = 0; i < iterationAmt; i++)
 	{
 		if (visualIO)
 		{
-			cout << "\n \n \n ----------Iteration " << i << " ---------- \n";
-			cout << "Inputs: \n";
+			if (debug) { std::cout << "\n \n \n ----------Iteration " << i << " ---------- \n"; }
+			if (debug) { std::cout << "Inputs: \n"; }
 		}
 		vector<float> tempInput;
+
+		//inputing random values
 		for (int i0 = 0; i0 < newNetwork.nodes[0]; i0++)
 		{
-			float temp0 = rdmClass.rdmGenerator();
-			tempInput.push_back(temp0);
 			if (visualIO)
 			{
-				cout << temp0 << ", ";
-			}
-		}
-		if (debug)
-		{
-			newNetwork.DEBUG_Calculate(tempInput);
-			vector<float> BP_Input;
-			if (visualIO)
-			{
-				cout << "\n \n Outputs: \n";
-				for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
-				{
-					float something = newNetwork.net[input_Layers - 1][node].value / (1 + abs(newNetwork.net[input_Layers - 1][node].value));
-					BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value / (1 + abs(newNetwork.net[input_Layers - 1][node].value)));
-					cout << something << ", ";
-				}
+				float temp0 = rdmClass.rdmGenerator();
+				std::cout << temp0 << ", ";
+				tempInput.push_back(temp0);
 			}
 			else
 			{
-				for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
-				{
-					BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value / (1 + abs(newNetwork.net[input_Layers - 1][node].value)));
-				}
-			}
-			newNetwork.DEBUG_backProp(BP_Input, true);
-			cout << "\n\n" << newNetwork.net[1][0].xCordList.size();
-			if (newNetwork.net[1][0].xCordList.size() >= 3)
-			{
-				for (const auto& layer : newNetwork.net)
-				{
-					for (phi::Node node : layer)
-					{
-						node.pointGrouper(3, true);
-						node.BCConstructor(true);
-					}
-				}
+				tempInput.push_back(rdmClass.rdmGenerator());
 			}
 		}
-		else
+		
+		//says debug but is just normal
+		newNetwork.DEBUG_Calculate(tempInput, debug);
+
+		if (visualIO)
 		{
-			newNetwork.calculate(tempInput);
-			vector<float> BP_Input;
-			if (visualIO)
+			std::cout << "\n \n Outputs: \n";
+		}
+
+		//inputting output values to temp vector
+		vector<float> BP_Input;
+		for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
+		{
+			if (debug)
 			{
-				cout << "\n \n Outputs: \n";
-				for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
-				{
-					float something = newNetwork.net[input_Layers - 1][node].value + 0;
-					BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value);
-					cout << something << ", ";
-				}
+				float inputTempVal = rdmClass.rdmGenerator() / 100;
+				BP_Input.push_back(inputTempVal);
+				cout << inputTempVal;
 			}
 			else
 			{
-				for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
-				{
-					BP_Input.push_back(newNetwork.net[input_Layers - 1][node].value);
-				}
+				BP_Input.push_back(rdmClass.rdmGenerator());
 			}
-			newNetwork.backProp(BP_Input);
-			if (newNetwork.net[1][0].xCordList.size() >= 3)
+		}
+
+		// back propagating the temp vector
+		newNetwork.DEBUG_backProp(BP_Input, debug);
+		for (const auto& layer : newNetwork.net)
+		{
+			for (const phi::Node& node : layer)
 			{
-				for (const auto& layer : newNetwork.net)
+				if (debug) { std::cout << "\nfjkodips   " << node.xCordList.size(); }
+				if (debug) { std::cout << "\nfjkodips   " << node.yCordList.size(); }
+			}
+		}
+
+		// grouping variables and constructing the bell curve 
+		if (newNetwork.net[1][0].xCordList.size() >= 3)
+		{
+			for (const auto& layer : newNetwork.net)
+			{
+				for (phi::Node node : layer)
 				{
-					for (phi::Node node : layer)
-					{
-						node.pointGrouper(3, true);
-						node.BCConstructor(true);
-					}
+					node.pointGrouper(3, debug);
+					node.BCConstructor(debug);
 				}
 			}
 		}
 		if (visualIO == false)
 		{
-			cout << "\n iteration #" << i + 1;
+			std::cout << "\n iteration #" << i + 1;
 		}
 	}
-
-	cout << "\nFinished in " << time(nullptr) - timeStart << " seconds. \n";
+	std::cout << "\nFinished in " << time(nullptr) - timeStart << " seconds. \n";
 	/*
 		for (int node = 0; node < newNetwork.nodes[input_Layers - 1]; ++node)
 		{
 			float output = newNetwork.net[input_Layers - 1][node].value;
 			cout << output << "\n";
 		}*/
-	cout << "done \n";
+	std::cout << "done \n";
 }
 
 int main()
@@ -416,4 +423,4 @@ int main()
 			DEBUG_calculateNetwork(false);
 		}
 	}
-} 
+}
