@@ -1,5 +1,5 @@
 # General-DL-net-AI
-This is the WIP application formed from a total rethinking of how AIs should operate. 
+A complete rethinking of AI that introduces a suite of innovative yet not fully fleshed out solutions that hope to close the gap between where AI is at now and it's true potential.
 
 ## General idea behind it in as few words as possible while being understandable:
 A more efficient AI framework similar to neural-nets; However, it is based on several fundamental operations (rather than a sigmoid), self-compression for speed & Arkam's razor, and has a triad of networks working in conjunction.
