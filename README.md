@@ -1,5 +1,6 @@
 # General-DL-net-AI
-A complete rethinking of AI that introduces a suite of innovative yet not fully fleshed out solutions that hope to close the gap between where AI is at now and it's true potential.
+A complete re-envisioning of neural networks focusing on implementing improved mathematical functions, sample order-independent values, runtime layer & node adjustment, compression, and simplification with additional networks for greater value-per-sample (resources for those networks will be carved from the inefficiencies eliminated)
+
 
 ## General idea behind it in as few words as possible while being understandable:
 A more efficient AI framework similar to neural-nets; However, it is based on several fundamental operations (rather than a sigmoid), self-compression for speed & Arkam's razor, and has a triad of networks working in conjunction.
