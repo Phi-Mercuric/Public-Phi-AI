@@ -1,5 +1,5 @@
 # General-DL-net-AI
-A complete re-envisioning of neural networks focusing on implementing improved mathematical functions, sample order-independent values, runtime layer & node adjustment, compression, and simplification with additional networks for greater value-per-sample (resources for those networks will be carved from the inefficiencies eliminated)
+A complete re-envisioning of neural networks focusing on implementing improved mathematical functions, sample-order independent output, runtime layer & node adjustment, compression, and simplification with additional networks for greater value-per-sample (resources for those networks will be carved from the inefficiencies eliminated)
 
 
 ## General idea behind it in as few words as possible while being understandable:
